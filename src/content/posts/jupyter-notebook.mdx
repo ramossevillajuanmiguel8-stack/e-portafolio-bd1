@@ -121,9 +121,7 @@ To embed your own notebook:
 ```astro
 ---
 import JupyterNotebook from '../../components/JupyterNotebook.astro';
-const cells = [
-  /* your notebook cells */
-];
+const cells = [/* your notebook cells */];
 ---
 
 <JupyterNotebook cells={cells} language="python" />
