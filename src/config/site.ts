@@ -32,7 +32,7 @@ export const site = {
   // ─── Identity ──────────────────────────────────────────────────────────────
 
   /** Site title. Shown in the browser tab and navbar. */
-  title: 'Albert Einstein',
+  title: 'Miguel Ramos',
 
   /** Site description. Used in meta tags. */
   description: 'A simple, clean, and responsive Astro template for academics. Powered by as-folio.',
@@ -44,30 +44,29 @@ export const site = {
 
   author: {
     /** Full name shown in navbar, about page heading, and footer. */
-    name: 'Albert Einstein',
+    name: 'Miguel Ramos',
 
     /** Short email address (used in social links). */
-    email: 'einstein@example.com',
+    email: 'jmramos@unbosque.edu.co',
 
     /** Path to profile photo. Place image in public/assets/img/. */
-    avatar: '/assets/img/prof_pic.jpg',
+    avatar: '/assets/img/prof_pic.jpeg',
 
     /**
      * Subtitle below your name on the about page.
      * HTML is supported.
      */
-    subtitle: `Theoretical Physicist
+    subtitle: `Estudiante de Ingenieria De Sistemas de la UEB
       &nbsp;·&nbsp;
-      <a href="https://en.wikipedia.org/wiki/Institute_for_Advanced_Study">Institute for Advanced Study</a>,
-      Princeton`,
+      Bases De Datos 1`,
 
     /**
      * Address block below profile photo.
      * HTML is supported.
      */
-    moreInfo: `<p>Institute for Advanced Study</p>
-      <p>Einstein Drive</p>
-      <p>Princeton, NJ 08540</p>`,
+    moreInfo: `<p>Estudiante de Ingenieria De Sistemas</p>
+      <p>Bases De Datos 1</p>
+      <p>Universidad El Bosque</p>`,
   },
 
   // ─── Social links ──────────────────────────────────────────────────────────
@@ -117,20 +116,17 @@ export const site = {
      * `href` values are relative to the site root (base is prepended automatically).
      */
     items: [
-      { label: 'about', href: '/' },
-      { label: 'blog', href: '/blog/' },
-      { label: 'publications', href: '/publications/' },
-      { label: 'projects', href: '/projects/' },
-      { label: 'repositories', href: '/repositories/' },
-      { label: 'cv', href: '/cv/' },
-      {
-        label: 'more',
+       { label: 'Inicio', href: '/' },
+    { label: 'Presentación', href: '/presentacion/' },
+    {
+        label: 'Evidencias',
         children: [
-          { label: 'teaching', href: '/teaching/' },
-          { label: 'people', href: '/people/' },
-          { label: 'books', href: '/books/' },
+            { label: 'Modelado', href: '/evidencias/modelado/' },
+            { label: 'Normalización', href: '/evidencias/normalizacion/' },
+            { label: 'SQL', href: '/evidencias/sql/' },
+            { label: 'Proyecto', href: '/evidencias/proyecto/' },
         ],
-      },
+    },
     ] as NavItem[],
   },
 
@@ -174,7 +170,7 @@ export const site = {
   blog: {
     /** Name shown in the blog page heading. */
     name: 'as-folio',
-    description: 'A simple, clean, and responsive Astro template for academics.',
+    description: 'E-portafolio academico de Bases De Datos 1. Aqui registro mi proceso ed aprendizaje, actividades y proyectos.',
     /** Number of posts per page. */
     postsPerPage: 5,
     /**
@@ -284,7 +280,7 @@ export const site = {
     inputPosition: 'bottom' as 'top' | 'bottom',
     darkTheme: 'dark',
     lightTheme: 'light',
-    lang: 'en',
+    lang: 'es',
   },
 
   // ─── Analytics ────────────────────────────────────────────────────────────
