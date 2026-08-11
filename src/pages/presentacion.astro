@@ -1,80 +1,67 @@
 ---
-import Page from '../layouts/Page.astro';
 import { site } from '../config/site';
+import Page from '../layouts/Page.astro';
 ---
 
 <Page title="Presentación">
-    <div class="space-y-12">
+  <div class="space-y-12">
+    <!-- Encabezado -->
+    <section>
+      <h1 class="mb-6 text-3xl font-bold">Presentación</h1>
 
-        <!-- Encabezado -->
-        <section>
-            <h1 class="text-3xl font-bold mb-6">Presentación</h1>
+      <div class="flex flex-col items-start gap-8 md:flex-row">
+        <!-- Foto -->
+        <img
+          src={site.author.avatar}
+          alt={`Foto de ${site.author.name}`}
+          class="h-40 w-40 rounded-full object-cover"
+        />
 
-            <div class="flex flex-col md:flex-row gap-8 items-start">
+        <!-- Información -->
+        <div>
+          <h2 class="mb-3 text-2xl font-semibold">
+            ¡Hola! Soy {site.author.name}
+          </h2>
 
-                <!-- Foto -->
-                <img
-                    src={site.author.avatar}
-                    alt={`Foto de ${site.author.name}`}
-                    class="w-40 h-40 object-cover rounded-full"
-                />
+          <p class="text-lg leading-relaxed">
+            Soy estudiante de Ingeniería de Sistemas en la Universidad El Bosque y este es mi
+            e-portafolio para la asignatura
+            <strong>Bases de Datos 1</strong>.
+          </p>
+        </div>
+      </div>
+    </section>
 
-                <!-- Información -->
-                <div>
-                    <h2 class="text-2xl font-semibold mb-3">
-                        ¡Hola! Soy {site.author.name}
-                    </h2>
+    <!-- Video -->
+    <section>
+      <h2 class="mb-6 text-2xl font-semibold">Video de presentación</h2>
 
-                    <p class="text-lg leading-relaxed">
-                        Soy estudiante de Ingeniería de Sistemas en la Universidad
-                        El Bosque y este es mi e-portafolio para la asignatura
-                        <strong>Bases de Datos 1</strong>.
-                    </p>
-                </div>
+      <p class="mb-6 leading-relaxed">
+        En este video hablo brevemente sobre mí, mis intereses y la importancia que considero que
+        tendrá Bases de Datos 1 en mi formación profesional.
+      </p>
 
-            </div>
-        </section>
+      <div class="aspect-video w-full overflow-hidden rounded-xl">
+        <iframe
+          class="h-full w-full"
+          src="https://www.youtube.com/embed/xvDwEziCabY"
+          title="Video de presentación de Miguel Ramos"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+    </section>
 
+    <!-- Reflexión -->
+    <section>
+      <h2 class="mb-6 text-2xl font-semibold">¿Por qué Bases de Datos 1?</h2>
 
-        <!-- Video -->
-        <section>
-            <h2 class="text-2xl font-semibold mb-6">
-                Video de presentación
-            </h2>
-
-            <p class="mb-6 leading-relaxed">
-                En este video hablo brevemente sobre mí, mis intereses y la
-                importancia que considero que tendrá Bases de Datos 1 en mi
-                formación profesional.
-            </p>
-
-            <div class="aspect-video w-full overflow-hidden rounded-xl">
-                <iframe
-                    class="h-full w-full"
-                     src="https://www.youtube.com/embed/xvDwEziCabY"
-                    title="Video de presentación de Miguel Ramos"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
-            </div>
-        </section>
-
-
-        <!-- Reflexión -->
-        <section>
-            <h2 class="text-2xl font-semibold mb-6">
-                ¿Por qué Bases de Datos 1?
-            </h2>
-
-            <p class="text-lg leading-relaxed">
-                Considero que esta asignatura será importante para mi vida
-                profesional porque las bases de datos son fundamentales en
-                muchas aplicaciones y sistemas de software. Aprender a
-                organizar, consultar y administrar información correctamente
-                me permitirá desarrollar soluciones más completas y eficientes.
-            </p>
-        </section>
-
-    </div>
+      <p class="text-lg leading-relaxed">
+        Considero que esta asignatura será importante para mi vida profesional porque las bases de
+        datos son fundamentales en muchas aplicaciones y sistemas de software. Aprender a organizar,
+        consultar y administrar información correctamente me permitirá desarrollar soluciones más
+        completas y eficientes.
+      </p>
+    </section>
+  </div>
 </Page>

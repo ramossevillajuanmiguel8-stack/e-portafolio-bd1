@@ -116,17 +116,17 @@ export const site = {
      * `href` values are relative to the site root (base is prepended automatically).
      */
     items: [
-       { label: 'Inicio', href: '/' },
-    { label: 'Presentación', href: '/presentacion/' },
-    {
+      { label: 'Inicio', href: '/' },
+      { label: 'Presentación', href: '/presentacion/' },
+      {
         label: 'Evidencias',
         children: [
-            { label: 'Modelado', href: '/evidencias/modelado/' },
-            { label: 'Normalización', href: '/evidencias/normalizacion/' },
-            { label: 'SQL', href: '/evidencias/sql/' },
-            { label: 'Proyecto', href: '/evidencias/proyecto/' },
+          { label: 'Modelado', href: '/evidencias/modelado/' },
+          { label: 'Normalización', href: '/evidencias/normalizacion/' },
+          { label: 'SQL', href: '/evidencias/sql/' },
+          { label: 'Proyecto', href: '/evidencias/proyecto/' },
         ],
-    },
+      },
     ] as NavItem[],
   },
 
@@ -170,7 +170,8 @@ export const site = {
   blog: {
     /** Name shown in the blog page heading. */
     name: 'as-folio',
-    description: 'E-portafolio academico de Bases De Datos 1. Aqui registro mi proceso ed aprendizaje, actividades y proyectos.',
+    description:
+      'E-portafolio academico de Bases De Datos 1. Aqui registro mi proceso ed aprendizaje, actividades y proyectos.',
     /** Number of posts per page. */
     postsPerPage: 5,
     /**
