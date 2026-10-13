@@ -2,18 +2,436 @@
 import Page from '../../layouts/Page.astro';
 ---
 
-<Page title="Normalización">
-  <div class="space-y-8">
-    <h1 class="text-3xl font-bold">Normalización</h1>
+<Page title="Taller de Normalización" description="Evidencia académica de Bases de Datos 1">
+  <article class="normalizacion">
+    <header>
+      <p><strong>Universidad El Bosque</strong> · Programa: Ingeniería de Sistemas</p>
+      <p>Asignatura: Bases de Datos 1 · Docente: Ing., Esp., M.Ed. Christian Felipe Duarte</p>
+      <h1>Taller de Normalización</h1>
+      <p><strong>Respuestas del grupo:</strong> Partes 1, 3 y 4</p>
+      <p>
+        <strong>Integrantes:</strong> Juan Miguel Ramos, Sebastián Castellanos Parra y Juan David Polo
+        Herrera
+      </p>
+      <p><strong>Fecha de entrega:</strong> 27/09/2026</p>
+      <p>La Parte 2 (desarrollo paso a paso) se encuentra en el archivo NORMALIZACION.xlsx.</p>
+      <p>
+        <a
+          class="file-link"
+          href={`${import.meta.env.BASE_URL}evidencias/normalizacion/NORMALIZACION.xlsx`}
+          target="_blank"
+          rel="noopener">Abrir o descargar NORMALIZACION.xlsx</a
+        >
+      </p>
+    </header>
 
-    <p class="text-lg leading-relaxed">
-      En esta sección presentaré las evidencias relacionadas con el proceso de normalización de
-      bases de datos y las diferentes formas normales estudiadas durante el curso.
+    <h2>Parte 1: Análisis de los esquemas</h2>
+    <h3>1.1 Esquema 1: HOSPITALIZACION</h3>
+    <p>
+      <strong>Esquema:</strong> HOSPITALIZACION (ID_Paciente, Nombre_Paciente, Especialidad_Tratamiento,
+      Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta).
+    </p>
+    <p>
+      <strong>Clave:</strong> ID_Paciente. Se asume una hospitalización vigente por paciente. Si se guardara
+      historial, la clave sería (ID_Paciente, Fecha_Ingreso) y Nombre_Paciente dependería de solo una
+      parte: problema de 2FN.
+    </p>
+    <p>
+      <strong>Supuestos:</strong> cada paciente tiene una especialidad, una cama y un médico; el código
+      de cama es único y la cama está en una sola ala; el email del médico es único.
+    </p>
+    <h4>a) Dependencias funcionales</h4>
+    <table>
+      <thead><tr><th>#</th><th>Dependencia</th><th>¿Por qué existe?</th></tr></thead><tbody>
+        <tr
+          ><td>1</td><td>ID_Paciente → Nombre_Paciente</td><td
+            >El ID identifica a una sola persona y esa persona tiene un solo nombre.</td
+          ></tr
+        >
+        <tr
+          ><td>2</td><td>ID_Paciente → Especialidad_Tratamiento, Cama_Asignada, Médico_Tratante</td
+          ><td>Cada hospitalización tiene una especialidad, una cama y un médico responsable.</td
+          ></tr
+        >
+        <tr
+          ><td>3</td><td>ID_Paciente → Fecha_Ingreso, Fecha_Alta</td><td
+            >Son las fechas de esa hospitalización.</td
+          ></tr
+        >
+        <tr
+          ><td>4</td><td>Cama_Asignada → Ala_Hospital</td><td
+            >Una cama está físicamente en una sola ala.</td
+          ></tr
+        >
+        <tr
+          ><td>5</td><td>Médico_Tratante → Teléfono_Médico, Email_Médico</td><td
+            >Son datos de contacto del médico, no del paciente.</td
+          ></tr
+        >
+        <tr
+          ><td>6</td><td>Email_Médico → Médico_Tratante, Teléfono_Médico</td><td
+            >El correo es único por médico, entonces también lo identifica.</td
+          ></tr
+        >
+      </tbody>
+    </table>
+    <p>
+      <strong>Dependencias descartadas:</strong> Especialidad_Tratamiento → Ala_Hospital no se cumple,
+      porque una especialidad puede tener pacientes en varias alas. Tampoco Médico_Tratante → Especialidad_Tratamiento,
+      porque un médico puede atender casos de distintas especialidades.
+    </p>
+    <h4>b) ¿En qué forma normal está?</h4>
+    <ul>
+      <li><strong>1FN:</strong> sí, los valores son atómicos.</li><li>
+        <strong>2FN:</strong> sí, la clave tiene un solo atributo y no puede haber dependencia de una
+        parte de la clave.
+      </li><li>
+        <strong>3FN:</strong> no. Hay dependencias transitivas: ID_Paciente → Cama_Asignada → Ala_Hospital
+        e ID_Paciente → Médico_Tratante → Teléfono_Médico, Email_Médico.
+      </li>
+    </ul>
+    <p><strong>Conclusión:</strong> está en 2FN, pero no llega a 3FN.</p>
+    <h4>c) Tres anomalías</h4>
+    <p>Los números siguientes son hipotéticos y solo ilustran el problema.</p>
+    <table>
+      <thead><tr><th>Tipo</th><th>Situación</th><th>¿Qué pasa?</th></tr></thead><tbody>
+        <tr
+          ><td>Inserción</td><td
+            >Se contrata a la Dra. Ruiz o se abre la cama 412 del ala norte, pero aún no tiene
+            pacientes.</td
+          ><td
+            >No se puede guardar sin ID_Paciente; el médico y la cama quedan sin registrar. La
+            salida sería inventar un paciente falso.</td
+          ></tr
+        >
+        <tr
+          ><td>Actualización</td><td>El Dr. Pérez cambia de teléfono y tiene 12 pacientes.</td><td
+            >Hay que actualizar 12 registros. Si se cambia solo una parte, el médico puede quedar
+            con dos teléfonos.</td
+          ></tr
+        >
+        <tr
+          ><td>Eliminación</td><td
+            >Sale el último paciente del Dr. Gómez, cama 210, ala este, y se borra su fila.</td
+          ><td
+            >Se pierde el contacto del médico y el dato de que la cama 210 está en el ala este.</td
+          ></tr
+        >
+      </tbody>
+    </table>
+
+    <h3>1.2 Esquema 2: PEDIDO_CLIENTE_PRODUCTO</h3>
+    <p>
+      <strong>Esquema:</strong> PEDIDO_CLIENTE_PRODUCTO (ID_Pedido, Fecha_Pedido, ID_Cliente, Nombre_Cliente,
+      Sector_Cliente, ID_Producto, Nombre_Producto, Precio_Producto, Cantidad_Solicitada, ID_Vendedor,
+      Nombre_Vendedor, Comisión_Vendedor).
+    </p>
+    <p>
+      <strong>Clave:</strong> (ID_Pedido, ID_Producto), porque cada fila es una línea de pedido. Se asume
+      que cada pedido tiene un solo cliente, fecha y vendedor, y que el precio es el vigente del producto.
+    </p>
+    <h4>a) Dependencias funcionales</h4>
+    <table>
+      <thead><tr><th>#</th><th>Dependencia</th><th>¿Por qué existe?</th></tr></thead><tbody>
+        <tr
+          ><td>1</td><td>ID_Pedido → Fecha_Pedido, ID_Cliente, ID_Vendedor</td><td
+            >Cada pedido tiene una fecha, lo hace un cliente y lo atiende un vendedor.</td
+          ></tr
+        >
+        <tr
+          ><td>2</td><td>ID_Cliente → Nombre_Cliente, Sector_Cliente</td><td
+            >Nombre y sector son datos del cliente, no del pedido.</td
+          ></tr
+        >
+        <tr
+          ><td>3</td><td>ID_Producto → Nombre_Producto, Precio_Producto</td><td
+            >Son datos del catálogo de productos.</td
+          ></tr
+        >
+        <tr
+          ><td>4</td><td>ID_Vendedor → Nombre_Vendedor, Comisión_Vendedor</td><td
+            >Son datos del vendedor.</td
+          ></tr
+        >
+        <tr
+          ><td>5</td><td>(ID_Pedido, ID_Producto) → Cantidad_Solicitada</td><td
+            >La cantidad necesita pedido y producto juntos.</td
+          ></tr
+        >
+      </tbody>
+    </table>
+    <p>
+      Por transitividad: ID_Pedido → Nombre_Cliente, Sector_Cliente, Nombre_Vendedor,
+      Comisión_Vendedor.
+    </p>
+    <h4>b) ¿En qué forma normal está?</h4>
+    <ul>
+      <li>
+        No cumple 2FN: varios atributos dependen solo de ID_Pedido o solo de ID_Producto, que son
+        partes de la clave compuesta.
+      </li><li>
+        No cumple 3FN: ID_Cliente → Nombre_Cliente, Sector_Cliente e ID_Vendedor → Nombre_Vendedor,
+        Comisión_Vendedor.
+      </li>
+    </ul>
+    <p>
+      <strong>Conclusión:</strong> solo está en 1FN, porque los valores son atómicos y tiene clave.
+    </p>
+    <h4>c) Cambiar el nombre de un producto o el sector de un cliente</h4>
+    <p>
+      Hay que actualizar todas las filas donde aparezca ese cliente o producto. Ejemplos
+      hipotéticos: 40 pedidos × 5 productos = 200 filas; un producto con 3.000 líneas implica 3.000
+      filas. En el esquema normalizado, se actualiza una fila.
+    </p>
+    <p>
+      El problema es real: dos sectores para un cliente pueden distorsionar reportes; dos nombres
+      para un producto pueden confundir facturas e inventario. Si se actualiza por partes o hay
+      variantes como “Ferretería” y “Ferreteria”, quedan datos inconsistentes. También hay anomalías
+      de inserción y eliminación.
     </p>
 
-    <div class="rounded-xl border p-8 text-center">
-      <h2 class="mb-2 text-xl font-semibold">Próximamente</h2>
-      <p>Aquí publicaré las actividades y evidencias realizadas durante el semestre.</p>
-    </div>
-  </div>
+    <h2>Parte 3: ¿3FN o BCNF?</h2>
+    <p>
+      Se usan los esquemas de la Parte 2 (desarrollo paso a paso en NORMALIZACION.xlsx), ambos en
+      3FN.
+    </p>
+    <h3>3.1 Hospital</h3>
+    <p>
+      <strong>Esquemas normalizados:</strong> HOSPITALIZACION (ID_Paciente PK, Nombre_Paciente, Especialidad_Tratamiento,
+      Fecha_Ingreso, Fecha_Alta, ID_Medico FK, Codigo_Cama FK); MEDICO (ID_Medico PK, Nombre_Medico, Telefono_Medico,
+      Email_Medico); CAMA (Codigo_Cama PK, Ala_Hospital).
+    </p>
+    <p>
+      En BCNF, todo determinante de una dependencia funcional debe ser clave candidata. En
+      HOSPITALIZACION, ID_Paciente es PK; en MEDICO, ID_Medico es PK y Email_Medico es único; en
+      CAMA, Codigo_Cama es PK. No hay determinante que no sea clave candidata. El esquema ya cumple
+      BCNF.
+    </p>
+    <table>
+      <thead><tr><th>Concepto</th><th>Todo en 1 tabla</th><th>3FN = BCNF (3 tablas)</th></tr></thead
+      ><tbody>
+        <tr><td>Tablas para una búsqueda completa</td><td>1</td><td>3 (2 JOIN)</td></tr>
+        <tr
+          ><td>Accesos por 900 búsquedas</td><td>900</td><td
+            >2.700 (+1.800, aproximadamente 1,8 s/día según el supuesto)</td
+          ></tr
+        >
+        <tr
+          ><td>Filas al cambiar teléfono de médico</td><td>≈ 200 (supuesto: 500 médicos)</td><td
+            >1</td
+          ></tr
+        >
+        <tr
+          ><td>Insertar hospitalización</td><td>1 fila con datos repetidos</td><td
+            >1 fila solo con IDs</td
+          ></tr
+        >
+      </tbody>
+    </table>
+    <p>
+      <strong>Recomendación del grupo:</strong> mantener 3FN, que en este caso ya es BCNF, sin desnormalizar.
+      Solo se desnormalizaría si se midiera lentitud real, por ejemplo con una vista o tabla de reportes.
+    </p>
+
+    <h3>3.2 Pedidos</h3>
+    <p>
+      <strong>Esquemas normalizados:</strong> CLIENTE (ID_Cliente PK, Nombre_Cliente, Sector_Cliente);
+      VENDEDOR (ID_Vendedor PK, Nombre_Vendedor, Comision_Vendedor); PRODUCTO (ID_Producto PK, Nombre_Producto,
+      Precio_Producto); PEDIDO (ID_Pedido PK, Fecha_Pedido, ID_Cliente FK, ID_Vendedor FK); DETALLE_PEDIDO
+      (ID_Pedido PK/FK, ID_Producto PK/FK, Cantidad_Solicitada).
+    </p>
+    <p>
+      CLIENTE, VENDEDOR, PRODUCTO y PEDIDO tienen como determinante su PK; DETALLE_PEDIDO usa la
+      clave compuesta (ID_Pedido, ID_Producto). No hay determinante que no sea clave candidata, por
+      lo que el esquema ya cumple BCNF.
+    </p>
+    <table>
+      <thead><tr><th>Concepto</th><th>Todo en 1 tabla</th><th>3FN = BCNF (5 tablas)</th></tr></thead
+      ><tbody>
+        <tr><td>Tablas para mostrar pedido completo</td><td>1</td><td>5 (4 JOIN)</td></tr>
+        <tr
+          ><td>Accesos por 900 búsquedas</td><td>900</td><td
+            >4.500 (+3.600, aproximadamente 3,6 s/día según el supuesto)</td
+          ></tr
+        >
+        <tr
+          ><td>Filas al cambiar sector de cliente</td><td>≈ 50 (supuesto: 2.000 clientes)</td><td
+            >1</td
+          ></tr
+        >
+        <tr
+          ><td>1.200 inserciones diarias</td><td>Textos repetidos en filas de 12 columnas</td><td
+            >Filas de detalle con IDs</td
+          ></tr
+        >
+      </tbody>
+    </table>
+    <p>
+      <strong>Recomendación del grupo:</strong> mantener 3FN (= BCNF). Los JOIN añaden poco coste según
+      los supuestos, mientras que la desnormalización aumenta duplicidad y riesgo de errores.
+    </p>
+
+    <h2>Parte 4: EMPLEADO, competencias e idiomas</h2>
+    <p>
+      <strong>Esquema original:</strong> EMPLEADO (ID_Empleado, Nombre_Empleado, Competencias_Técnicas,
+      Idiomas). Cada empleado tiene varias competencias y varios idiomas, y ambas listas son independientes.
+    </p>
+    <h3>a) ¿Viola 1FN? Demuestra por qué</h3>
+    <p>Sí. Ejemplo ilustrativo:</p>
+    <table>
+      <thead
+        ><tr
+          ><th>ID_Empleado</th><th>Nombre_Empleado</th><th>Competencias_Técnicas</th><th>Idiomas</th
+          ></tr
+        ></thead
+      ><tbody>
+        <tr><td>101</td><td>Polo</td><td>Python, Java, SQL</td><td>Español, Inglés</td></tr>
+        <tr><td>102</td><td>Pepito</td><td>C++, Python</td><td>Inglés, Francés, Alemán</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Hay varios valores en una sola celda, separados por comas; 1FN exige un valor por celda. Si se
+      combinan competencias e idiomas en filas, se generan combinaciones innecesarias: Polo (3
+      competencias × 2 idiomas) tendría 6 filas. Son listas independientes, por lo que deben ir en
+      tablas separadas.
+    </p>
+    <h3>b) Normaliza a 1FN. ¿Cuántas tablas necesitas?</h3>
+    <p>
+      Se necesitan 3 tablas: EMPLEADO (ID_Empleado PK, Nombre_Empleado); EMPLEADO_COMPETENCIA
+      (ID_Empleado FK, Competencia; PK compuesta (ID_Empleado, Competencia)); EMPLEADO_IDIOMA
+      (ID_Empleado FK, Idioma; PK compuesta (ID_Empleado, Idioma)). También quedan en 3FN y BCNF.
+    </p>
+    <h4>EMPLEADO</h4>
+    <table>
+      <thead><tr><th>ID_Empleado</th><th>Nombre_Empleado</th></tr></thead><tbody
+        ><tr><td>101</td><td>Polo</td></tr><tr><td>102</td><td>Pepito</td></tr></tbody
+      >
+    </table>
+    <h4>EMPLEADO_COMPETENCIA</h4>
+    <table>
+      <thead><tr><th>ID_Empleado</th><th>Competencia</th></tr></thead><tbody
+        ><tr><td>101</td><td>Python</td></tr><tr><td>101</td><td>Java</td></tr><tr
+          ><td>101</td><td>SQL</td></tr
+        ><tr><td>102</td><td>C++</td></tr><tr><td>102</td><td>Python</td></tr></tbody
+      >
+    </table>
+    <h4>EMPLEADO_IDIOMA</h4>
+    <table>
+      <thead><tr><th>ID_Empleado</th><th>Idioma</th></tr></thead><tbody
+        ><tr><td>101</td><td>Español</td></tr><tr><td>101</td><td>Inglés</td></tr><tr
+          ><td>102</td><td>Inglés</td></tr
+        ><tr><td>102</td><td>Francés</td></tr><tr><td>102</td><td>Alemán</td></tr></tbody
+      >
+    </table>
+    <h3>c) Dos búsquedas</h3>
+    <p>
+      <strong>“Empleados que saben Python”:</strong> basta EMPLEADO_COMPETENCIA para obtener IDs, o se
+      une EMPLEADO para obtener nombres.
+    </p>
+    <p>
+      <strong>“Python Y hablan Inglés”:</strong> se unen las tres tablas para obtener el nombre:
+    </p>
+    <pre><code>SELECT e.ID_Empleado, e.Nombre_Empleado
+FROM EMPLEADO e
+JOIN EMPLEADO_COMPETENCIA c ON c.ID_Empleado = e.ID_Empleado
+JOIN EMPLEADO_IDIOMA i ON i.ID_Empleado = e.ID_Empleado
+WHERE c.Competencia = 'Python' AND i.Idioma = 'Inglés';</code></pre>
+    <h3>d) ¿Sería mejor guardar todo en UNA columna de texto?</h3>
+    <table>
+      <thead
+        ><tr><th>Criterio</th><th>Una sola celda de texto</th><th>Tablas separadas</th></tr></thead
+      ><tbody>
+        <tr
+          ><td>Control de errores</td><td>Riesgo de “Pyton”, “python”, espacios y repetidos.</td><td
+            >Cada valor puede controlarse; la PK impide duplicados exactos.</td
+          ></tr
+        >
+        <tr
+          ><td>Buscar</td><td>Confuso: “C” puede confundirse con “C++”.</td><td
+            >Coincidencia exacta y posibilidad de índices.</td
+          ></tr
+        >
+        <tr
+          ><td>Modificar o borrar</td><td>Hay que editar la cadena completa.</td><td
+            >Se modifica o borra una fila.</td
+          ></tr
+        >
+        <tr><td>Ver todo junto</td><td>Consulta simple.</td><td>Requiere JOIN.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Conclusión:</strong> las tablas separadas son preferibles cuando las competencias e idiomas
+      se usan para filtros, perfiles, equipos o reportes. Una columna de texto o JSON puede servir para
+      notas informativas que no se filtran ni cuentan; en una base relacional, las listas separadas por
+      comas son mala práctica.
+    </p>
+    <footer>
+      <p>
+        <strong>Nota:</strong> los valores numéricos identificados como supuestos o ejemplos son hipotéticos
+        y se incluyeron para ilustrar los casos. Se quitaron tildes de algunos nombres de columnas en
+        las tablas nuevas, como Telefono_Medico.
+      </p>
+    </footer>
+  </article>
 </Page>
+
+<style>
+  .normalizacion {
+    max-width: 100%;
+    line-height: 1.7;
+  }
+  .normalizacion header {
+    border-bottom: 1px solid var(--color-border, #ddd);
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+  }
+  .normalizacion h1 {
+    margin-top: 1rem;
+  }
+  .normalizacion h2 {
+    margin-top: 2.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #d8d8d8;
+  }
+  .normalizacion h3 {
+    margin-top: 1.8rem;
+  }
+  .normalizacion table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+  }
+  .normalizacion th,
+  .normalizacion td {
+    border: 1px solid #d1d5db;
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .normalizacion th {
+    background: #f3f4f6;
+    color: #111827;
+  }
+  .normalizacion pre {
+    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: #f3f4f6;
+    color: #111827;
+  }
+  .normalizacion .file-link {
+    display: inline-block;
+    padding: 0.7rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .normalizacion footer {
+    margin-top: 2rem;
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+</style>
