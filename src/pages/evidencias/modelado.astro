@@ -2,38 +2,783 @@
 import Page from '../../layouts/Page.astro';
 const diagramUrl = `${import.meta.env.BASE_URL}evidencias/modelado/modelo_ER_CineAndes.png`;
 const sourceUrl = `${import.meta.env.BASE_URL}evidencias/modelado/modelo_ER_CineAndes.drawio`;
+const taller1 = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/evidencias/modelado/taller1/`;
 ---
 
-<Page title="Modelado" description="Diagrama entidad-relación de CineAndes">
+<Page
+  title="Modelado"
+  description="Evidencias de modelado: Taller 1 (Terminal Portuaria Bahía Verde) y diagrama entidad-relación de CineAndes"
+>
   <article class="modelado">
-    <h1>Modelo entidad-relación: CineAndes</h1>
-    <p>
-      Esta evidencia presenta el diagrama entidad-relación elaborado para el caso CineAndes, con
-      entidades, atributos y relaciones del sistema.
-    </p>
-    <figure>
-      <a
-        href={diagramUrl}
-        target="_blank"
-        rel="noopener"
-        aria-label="Abrir el diagrama en tamaño completo"
-      >
-        <img src={diagramUrl} alt="Diagrama entidad-relación de CineAndes" loading="lazy" />
-      </a>
-      <figcaption>
-        Diagrama entidad-relación de CineAndes. Selecciona la imagen para abrirla en tamaño
-        completo.
-      </figcaption>
-    </figure>
-    <p>
-      <a class="file-link" href={sourceUrl} target="_blank" rel="noopener"
-        >Abrir o descargar el archivo editable de Draw.io</a
-      >
-    </p>
+    <section id="taller-1">
+      <header>
+        <p>
+          <strong>Universidad El Bosque</strong> · Facultad de Ingeniería · Programa: Ingeniería de Sistemas
+        </p>
+        <p>Asignatura: Bases de Datos 1 · Docente: Ing., Esp., M.Ed. Christian Felipe Duarte</p>
+        <h1>Taller 1: Reducción a tablas</h1>
+        <p>
+          <strong>Reglas de transformación del modelo entidad-relación.</strong> Modelo de partida: Terminal
+          Portuaria Bahía Verde.
+        </p>
+        <p>
+          <strong>Integrantes:</strong> Juan David Polo Herrera, Sebastián Castellanos Parra y Miguel
+          Ramos
+        </p>
+        <p><strong>Periodo:</strong> Bogotá D.C., 2026-2</p>
+      </header>
+      <h2>1. Transformación de atributos</h2>
+      <p>
+        La idea en este caso es sencilla: en el modelo transformado no puede quedar ningún atributo
+        compuesto, multivaluado ni derivado. Todos tienen que salir de alguna forma.
+      </p>
+      <h3 id="ej-1a">1a. Atributos de IMPORTADOR</h3>
+      <p>
+        IMPORTADOR viene con los tres problemas al tiempo, uno de cada tipo. Entonces toca ir uno
+        por uno.
+      </p>
+      <ul>
+        <li>
+          <p>
+            <strong>El compuesto: nombre_completo.</strong> Este es el más sencillo. El atributo de arriba
+            no guarda nada, solo está agrupando a <em>nombres</em> y <em>apellidos</em>. Entonces lo
+            borramos, dejamos los dos hijos sueltos ahí en la entidad y queda resuelto.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>El multivaluado: correo.</strong> Este ya sí toca trabajarlo. Un atributo no puede
+            guardar varios valores, entonces sacamos <em>correo</em> de IMPORTADOR y lo volvemos una entidad
+            aparte, CORREO_IMPORTADOR, pegada con una relación 1:N que le pusimos TENER. Así cada correo
+            es su propia fila y el importador puede tener los que quiera.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>El derivado: antiguedad_cliente.</strong> Este se va y ya. No se guarda porque se
+            saca de <em>fecha_registro</em> con una resta.
+          </p>
+        </li>
+      </ul>
+      <p>
+        CORREO_IMPORTADOR queda como entidad débil. O sea que no se sostiene sola: si borras el
+        importador, sus correos ya no significan nada. Y <em>correo</em> solito tampoco alcanza para saber
+        cuál fila es cuál, apenas es clave parcial. La clave completa termina siendo
+        <strong>documento + correo</strong>, y ese documento le llega desde IMPORTADOR por la
+        relación TENER.
+      </p>
+      <p>
+        Cardinalidad y participación: IMPORTADOR queda en <strong>(1) parcial</strong>. Parcial
+        porque puede haber un importador registrado que todavía no ha dado ningún correo. Y
+        CORREO_IMPORTADOR queda en <strong>(N) total</strong>, total porque un correo suelto, sin
+        dueño, no puede existir ahí.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}01_Ej1a_IMPORTADOR.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}01_Ej1a_IMPORTADOR.png`}
+            alt="Ejercicio 1a: IMPORTADOR con la entidad débil CORREO_IMPORTADOR"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 1a. IMPORTADOR y la entidad débil CORREO_IMPORTADOR. Selecciona la imagen para
+          abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}01_Ej1a_IMPORTADOR.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-1b">1b. El atributo sede de CONTRATISTA</h3>
+      <p>
+        Este está más enredado porque sede es multivaluado y compuesto al mismo tiempo. Y lo
+        importante acá es que el orden en que apliques las reglas cambia el resultado, así que pilas
+        con eso.
+      </p>
+      <p>
+        Nosotros lo hicimos así. Primero aplicamos la regla del multivaluado: sacamos sede completa
+        de CONTRATISTA y la volvemos la entidad SEDE_CONTRATISTA, conectada con una relación 1:N que
+        llamamos UBICAR. Después aplicamos la regla del compuesto: ya con la entidad creada,
+        partimos sede en ciudad y direccion.
+      </p>
+      <p>¿Por qué no funciona hacerlo al contrario?</p>
+      <p>
+        Si arrancas descomponiendo, te quedan dos multivaluados sueltos dentro de CONTRATISTA:
+        ciudad por un lado y direccion por el otro. Y cuando los saques después, cada uno termina en
+        su propia entidad y ahí se daña todo.
+      </p>
+      <p>
+        El problema es que el modelo deja de saber cuál dirección va con cuál ciudad. Por ejemplo,
+        un contratista tiene sede en Bogotá (Calle 100) y en Cali (Av 6). Al separarlos, el modelo
+        solo sabe que hay dos ciudades y dos direcciones, pero no cuál va con cuál. Te salen cuatro
+        combinaciones posibles cuando en realidad solo eran dos. Por eso: <strong
+          >primero se extrae, después se descompone.</strong
+        >
+      </p>
+      <p>
+        La clave parcial de SEDE_CONTRATISTA es la pareja (ciudad, direccion), y la completa es
+        <strong>nit + ciudad + direccion</strong>. La participación queda igual al punto de arriba:
+        CONTRATISTA (1) parcial — SEDE_CONTRATISTA (N) total, porque puede haber contratista sin
+        sede cargada, pero no una sede sin contratista.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}02_Ej1b_CONTRATISTA_sede.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}02_Ej1b_CONTRATISTA_sede.png`}
+            alt="Ejercicio 1b: CONTRATISTA con la entidad débil SEDE_CONTRATISTA"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 1b. CONTRATISTA y la entidad débil SEDE_CONTRATISTA. Selecciona la imagen para
+          abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}02_Ej1b_CONTRATISTA_sede.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-1c">1c. Por qué se van antiguedad_cliente y antiguedad</h3>
+      <p>
+        Los dos son atributos derivados, o sea que ese valor nadie lo escribe: se calcula. La
+        antigüedad del cliente sale de <em>fecha_registro</em> y la del buque sale de
+        <em>anio_construccion</em>. En los dos casos es una resta contra la fecha de hoy, nada más.
+      </p>
+      <p>
+        No se pueden dejar por dos cosas. La primera es que guardar algo que ya puedes calcular es
+        redundancia, y la redundancia siempre termina en datos que no cuadran: alguien actualiza un
+        campo y se le olvida el otro. La segunda, que es la peor, es que ese valor se desactualiza
+        solo. Mañana la antigüedad ya cambió aunque nadie haya tocado nada, entonces te tocaría
+        recalcular la tabla completa todos los días.
+      </p>
+      <p>
+        ¿Y se pierde algo? No, nada. Los datos de base siguen ahí: <em>fecha_registro</em> y
+        <em>anio_construccion</em> no se van, y esos sí son fijos. La antigüedad la sacas en el momento
+        de la consulta y siempre te da el número bueno. Lo único que dejamos de hacer es guardarla.
+      </p>
+      <h3 id="ej-1d">1d. Si el importador solo puede tener dos correos</h3>
+      <p>
+        La regla como tal no cambia, un multivaluado sigue siendo multivaluado. Lo que pasa es que
+        al ponerle un tope fijo aparece una segunda opción que antes no tenía ni sentido. Las dos
+        sirven, y cuál escoges depende de qué tan firme sea esa regla.
+      </p>
+      <p>
+        <strong>Opción A: dejar la entidad</strong> como quedó en 1a, pero cambiando la cardinalidad de
+        IMPORTADOR a (2) en vez de (N). Lo bueno: si mañana el puerto dice que ahora son tres correos,
+        o que otra vez son ilimitados, solo cambias el número y no tocas nada más. Lo malo: estás manteniendo
+        una entidad completa y una relación para guardar dos valores, que es harto para lo poquito que
+        es.
+      </p>
+      <p>
+        <strong>Opción B: dos atributos simples</strong>, <em>correo1</em> y <em>correo2</em>,
+        metidos directo en IMPORTADOR. Lo bueno: te ahorras una entidad, el modelo queda más corto y
+        las consultas salen directas, sin joins. Lo malo: el límite queda clavado en la estructura,
+        así que pasar a tres correos ya no es cambiar un numerito sino tocar el esquema. Y para
+        buscar quién tiene cierto correo toca mirar los dos campos.
+      </p>
+      <p>
+        Nosotros creemos que la opción B solo vale la pena si ese tope de dos es una regla del
+        negocio de las que no se mueven. Si es una política administrativa que puede cambiar el otro
+        semestre, mejor nos quedamos con la entidad débil.
+      </p>
+      <h2>2. Relaciones N:M con atributos</h2>
+      <h3 id="ej-2a">2a. La relación EMBARQUE</h3>
+      <p>
+        Una relación N:M no sobrevive al modelo transformado, así de simple. Y para rematar, esta
+        trae atributos propios (<em>tipo_carga</em>, <em>peso_toneladas</em>,
+        <em>fecha_solicitud</em>) que no son ni de IMPORTADOR ni de RECALADA.
+      </p>
+      <p>
+        Lo que hicimos fue volver esa relación una entidad, que le dejamos el mismo nombre EMBARQUE,
+        y pegarla a cada lado con una relación 1:N. Los tres atributos se van para adentro de esa
+        entidad nueva, que es donde de verdad van.
+      </p>
+      <p>
+        EMBARQUE queda como entidad débil porque no tiene nada propio con qué identificarse. Su
+        identidad es literalmente la pareja: depende de IMPORTADOR y de RECALADA al tiempo. La clave
+        le queda <strong>documento + codigo_servicio + fecha_arribo</strong>.
+      </p>
+      <p>
+        Ojo acá porque es donde se suele cometer el error: RECALADA <strong>también</strong> es débil,
+        depende de SERVICIO. Entonces su identificador no es solo <em>fecha_arribo</em>, es la
+        pareja (codigo_servicio, fecha_arribo). Por eso la clave de EMBARQUE termina con tres
+        pedazos y no con dos. La debilidad se va encadenando.
+      </p>
+      <p>
+        La cardinalidad y la participación quedan así: IMPORTADOR (1) parcial — EMBARQUE (N) total,
+        y RECALADA (1) parcial — EMBARQUE (N) total. El lado de la entidad débil siempre va total,
+        porque un embarque sin importador o sin recalada no existe. Los lados fuertes van parciales,
+        porque sí puede haber un importador que todavía no ha embarcado nada, o una recalada que
+        llegó vacía.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}03_Ej2a_EMBARQUE.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}03_Ej2a_EMBARQUE.png`}
+            alt="Ejercicio 2a: la relación N:M EMBARQUE convertida en entidad débil"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 2a. La relación N:M EMBARQUE convertida en entidad débil. Selecciona la imagen
+          para abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}03_Ej2a_EMBARQUE.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <p class="nota">
+        Ahí también dibujamos SERVICIO – IDENTIFICAR – RECALADA, porque sin esa parte no se puede
+        sustentar de dónde sale la clave.
+      </p>
+      <h3 id="ej-2b">2b. La relación CUADRILLA</h3>
+      <p>
+        Misma receta del punto de arriba. CUADRILLA se vuelve entidad débil con dos relaciones 1:N,
+        una para OPERARIO y otra para RECALADA, y los atributos <em>turno</em> y
+        <em>horas_trabajadas</em> se van para adentro. La clave queda <strong
+          >id_operario + codigo_servicio + fecha_arribo</strong
+        >, y la participación es OPERARIO (1) parcial — CUADRILLA (N) total; RECALADA (1) parcial —
+        CUADRILLA (N) total.
+      </p>
+      <h4>Por qué turno y horas_trabajadas no corresponden en las entidades</h4>
+      <p>
+        Porque no describen al operario ni a la recalada por aparte. Describen el cruce de los dos.
+        Solo cuando dices "este operario, en esta recalada" tiene sentido preguntar qué turno hizo y
+        cuántas horas trabajó. Si te falta cualquiera de los dos, la pregunta no se puede responder.
+      </p>
+      <p>
+        Un ejemplo para verlo: el operario 101 trabaja el 12/05 en la recalada A, turno noche, 6
+        horas. Y el 13/05 en la recalada B, turno día, 8 horas.
+      </p>
+      <ul>
+        <li>
+          <p>
+            Si los metemos en OPERARIO, el 101 tiene un solo campo <em>turno</em> y un solo campo
+            <em>horas_trabajadas</em>, entonces solo cabe uno de los dos días. El otro <strong
+              >se pierde</strong
+            >, no hay dónde meterlo.
+          </p>
+        </li>
+        <li>
+          <p>
+            Si los metemos en RECALADA, la recalada A tendría un solo turno para toda la cuadrilla,
+            así hayan trabajado quince personas en horarios distintos. <strong>Se pierde</strong> la diferencia
+            entre operarios, y encima el dato se <strong>duplica</strong>, porque el mismo turno se
+            repite para todos los que estuvieron ahí.
+          </p>
+        </li>
+      </ul>
+      <p>
+        En cualquiera de los dos casos el modelo ya no puede responder algo tan sencillo como
+        "cuántas horas trabajó el operario 101 en la recalada A", que es justo el dato que el puerto
+        necesita para pagar la nómina.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}04_Ej2b_CUADRILLA.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}04_Ej2b_CUADRILLA.png`}
+            alt="Ejercicio 2b: la relación N:M CUADRILLA convertida en entidad débil"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 2b. La relación N:M CUADRILLA convertida en entidad débil. Selecciona la imagen
+          para abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}04_Ej2b_CUADRILLA.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-2c">2c. Por qué esta transformación no cambia el significado</h3>
+      <p>
+        En el modelo original, cada pareja (importador, recalada) es un hecho único con sus datos.
+        EMBARQUE representa exactamente esa pareja, ni más ni menos: como su clave es la unión de
+        los dos identificadores, hay una fila por cada pareja real y no se puede repetir. Las dos
+        relaciones 1:N vuelven a armar la N:M original sin inventarse combinaciones nuevas ni borrar
+        las que ya había.
+      </p>
+      <p>
+        En cambio, poner dos relaciones 1:N directas sí daña el modelo. Si pones IMPORTADOR (1) —
+        (N) RECALADA, estás diciendo que cada recalada tiene un solo importador, pero el modelo
+        original deja que varios importadores manden carga en el mismo barco. Con esa versión se
+        pierden todos los embarques menos uno. Y si lo volteas, RECALADA (1) — (N) IMPORTADOR, ahora
+        cada importador solo puede usar una recalada en toda su vida, que es igual de malo.
+      </p>
+      <p>
+        Y aparte de lo de la cardinalidad, en ninguna de las dos versiones hay un lugar decente para
+        meter <em>tipo_carga</em>, <em>peso_toneladas</em> y <em>fecha_solicitud</em>, porque esos
+        datos describen la pareja y no a ninguno de los dos por aparte. Donde los pongas van a
+        quedar mal.
+      </p>
+      <h2>3. Relación ternaria y agregación</h2>
+      <h3 id="ej-3a">3a. La relación ternaria ABASTECER</h3>
+      <p>
+        El modelo transformado solo acepta relaciones binarias, entonces una ternaria no se puede
+        quedar así. Lo que se hace es cambiarla por una entidad que la represente, y conectar esa
+        entidad con cada uno de los tres participantes con relaciones 1:N. El atributo
+        <em>cantidad</em> se va para adentro de la entidad nueva, porque depende de los tres al tiempo.
+      </p>
+      <p>
+        La clave de ABASTECER es <strong
+          >nit + codigo_servicio + fecha_arribo + codigo_suministro</strong
+        >.
+      </p>
+      <h4>Por qué toca meter los identificadores de las tres entidades</h4>
+      <p>
+        Porque la cardinalidad es M:N:N, y eso quiere decir que ninguna pareja determina a la
+        tercera. El enunciado lo dice clarito: un mismo suministro lo pueden entregar varios
+        contratistas en la misma recalada. Entonces si tratas de identificar una entrega solo con
+        (recalada, suministro), te van a salir varias filas distintas con esos mismos valores y no
+        las puedes diferenciar. Necesitas las tres. Y como RECALADA es débil, ella sola mete dos
+        pedazos en vez de uno, por eso la clave termina con cuatro atributos y no con tres.
+      </p>
+      <p>
+        Las tres relaciones quedan igual en cardinalidad y participación: CONTRATISTA (1) parcial —
+        ABASTECER (N) total; RECALADA (1) parcial — ABASTECER (N) total; SUMINISTRO (1) parcial —
+        ABASTECER (N) total.
+      </p>
+      <p>
+        Si solo pudiera haber un contratista por recalada y suministro, la cardinalidad cambiaría a
+        M:N:1 del lado de CONTRATISTA, porque la pareja (recalada, suministro) ya diría quién es el
+        contratista. La clave se acortaría a <strong
+          >codigo_servicio + fecha_arribo + codigo_suministro</strong
+        >, y <em>nit</em> se saldría de la clave para quedar como un atributo normal de ABASTECER.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}05_Ej3a_ABASTECER.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}05_Ej3a_ABASTECER.png`}
+            alt="Ejercicio 3a: la relación ternaria ABASTECER convertida en entidad"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 3a. La relación ternaria ABASTECER convertida en entidad. Selecciona la imagen
+          para abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}05_Ej3a_ABASTECER.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-3b">3b. La agregación DEPOSITA</h3>
+      <p>
+        Una agregación es cuando coges una relación entera y la tratas como si fuera una entidad,
+        para poder relacionarla con otra cosa. El modelo transformado no las acepta.
+      </p>
+      <p>
+        Lo bueno es que acá no hay que hacer casi nada, porque ya lo habíamos resuelto sin darnos
+        cuenta en el punto 2a. Como EMBARQUE dejó de ser relación y se volvió entidad, la agregación
+        se desarma sola: ahora simplemente pegamos BODEGA contra esa entidad, como con cualquier
+        otra. Queda apoyada sobre EMBARQUE, que es lo único en todo el modelo transformado que
+        significa "este importador participando en esta recalada". Ninguna otra sirve.
+      </p>
+      <ul>
+        <li>
+          <p>
+            Si la colgaras de <strong>IMPORTADOR</strong>, estarías diciendo que cada importador usa
+            siempre la misma bodega, sin importar en qué escala llegó su carga. Se pierde que un
+            mismo importador puede usar bodegas distintas en viajes distintos.
+          </p>
+        </li>
+        <li>
+          <p>
+            Si la colgaras de <strong>RECALADA</strong>, estarías diciendo que toda la carga de la
+            escala se va a una sola bodega. Se pierde la separación por importador cuando varios
+            embarcan en el mismo barco, que es lo que pasa siempre en un puerto.
+          </p>
+        </li>
+      </ul>
+      <p>
+        La cardinalidad y la participación son EMBARQUE (N) total — BODEGA (1) parcial. Todo
+        embarque va a parar a una sola bodega, mientras que una bodega puede estar vacía en este
+        momento y con el tiempo recibe un montón de embarques.
+      </p>
+      <p>
+        Un detalle que importa: <em>codigo_bodega</em>
+        <strong>no</strong> entra en la clave de EMBARQUE. Es un dato descriptivo y ya. EMBARQUE tenía
+        su clave completa desde antes de que apareciera BODEGA, así que esa relación es normalita.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}06_Ej3b_DEPOSITA.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}06_Ej3b_DEPOSITA.png`}
+            alt="Ejercicio 3b: la agregación DEPOSITA resuelta sobre EMBARQUE"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 3b. La agregación DEPOSITA resuelta sobre EMBARQUE. Selecciona la imagen para
+          abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}06_Ej3b_DEPOSITA.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h2>4. Especialización y relaciones recursivas</h2>
+      <h3 id="ej-4a">4a. La jerarquía de OPERARIO</h3>
+      <p>
+        La especialización se cambia por una relación binaria 1:1 entre OPERARIO y cada subclase.
+        Cada subclase queda como su propia entidad, con sus atributos, y hereda <em>id_operario</em>
+        como clave. La participación es OPERARIO (1) parcial — GRUERO (1) total, y OPERARIO (1) parcial
+        — ESTIBADOR (1) total.
+      </p>
+      <p>
+        Que la jerarquía es <strong>parcial</strong> se ve en que la participación de OPERARIO en las
+        dos relaciones SER es parcial, o sea línea sencilla. Eso es lo que deja que existan operarios
+        que no son ni grueros ni estibadores, que es justo lo que dice el enunciado. Del otro lado sí
+        va total, porque todo gruero es sí o sí un operario.
+      </p>
+      <p>
+        Que es <strong>solapada</strong> se ve en que son dos relaciones separadas y no una sola con opciones
+        que se peleen entre sí. Como cada una va por su lado, nada impide que el mismo
+        <em>id_operario</em> aparezca en GRUERO y en ESTIBADOR al tiempo, que es justo lo que el enunciado
+        pide poder representar.
+      </p>
+      <h4>Qué estrategia queda descartada por el solapamiento</h4>
+      <p>
+        La de tabla única con atributo discriminante, esa donde metes todo en una sola entidad y le
+        agregas un campo <em>tipo_operario</em> que diga si es gruero o estibador. Esa no sirve, porque
+        un campo de un solo valor no puede decir "es las dos cosas". Te tocaría escoger una, y ahí la
+        jerarquía se vuelve exclusiva, que es justo lo contrario de lo que necesitamos.
+      </p>
+      <p>
+        Y por el lado de que es parcial, tampoco sirve dejar solo las subclases y borrar la
+        superclase, porque los operarios que no son ni grueros ni estibadores se quedarían sin
+        ningún lado donde existir.
+      </p>
+      <p>
+        Y <em>equipos_manejados</em> es multivaluado, así que le aplicamos la misma regla del ejercicio
+        1: sale de ESTIBADOR y se vuelve la entidad EQUIPO_ESTIBADOR, pegada con una relación 1:N. Clave:
+        <strong>id_operario + equipo</strong>. Participación: ESTIBADOR (1) parcial —
+        EQUIPO_ESTIBADOR (N) total.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}07_Ej4a_ESPECIALIZACION.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}07_Ej4a_ESPECIALIZACION.png`}
+            alt="Ejercicio 4a: especialización de OPERARIO en GRUERO y ESTIBADOR"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 4a. Especialización de OPERARIO en GRUERO y ESTIBADOR (parcial y solapada).
+          Selecciona la imagen para abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}07_Ej4a_ESPECIALIZACION.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-4b">4b. Las dos relaciones recursivas</h3>
+      <p>
+        De las dos, solo toca transformar SUPERVISAR. Y la razón importa: lo que obliga a
+        transformar no es que la relación sea recursiva. Una recursiva 1:N es una relación binaria
+        1:N como cualquier otra y pasa derecho. Lo que decide es la cardinalidad.
+      </p>
+      <ul>
+        <li>
+          <p>
+            <strong>SUPERVISAR</strong> es M:N recursiva y trae el atributo <em>periodo</em>. Sí se
+            transforma.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>TRANSBORDAR</strong> es 1:N recursiva y no tiene atributos. No se transforma.
+          </p>
+        </li>
+      </ul>
+      <p>
+        A SUPERVISAR le hicimos lo mismo del ejercicio 2: se vuelve la entidad SUPERVISION, con dos
+        relaciones 1:N hacia OPERARIO. Los nombres de rol <strong>supervisor</strong> y
+        <strong>supervisado</strong> se quedan escritos sobre las líneas, que es lo que deja saber quién
+        manda a quién. La participación es OPERARIO (1) parcial en las dos y SUPERVISION (N) total en
+        las dos, y la clave queda <strong
+          >id_operario(supervisor) + id_operario(supervisado) + periodo</strong
+        >.
+      </p>
+      <p>
+        Ese <em>periodo</em> queda como atributo de SUPERVISION, pero además entra en la clave. Y eso
+        no es opcional: el enunciado dice que un operario puede ser supervisado por distintos operarios
+        en periodos distintos, entonces si le sacas el <em>periodo</em> a la clave, dos supervisiones
+        de la misma pareja en épocas diferentes quedan idénticas y el modelo no las puede separar.
+      </p>
+      <p>
+        TRANSBORDAR se mantiene igual, con su rombo y sus roles <em>recalada_origen</em> y
+        <em>recalada_destino</em>, participación parcial en los dos lados.
+      </p>
+      <p>
+        Una aclaración que vale la pena hacer: en el modelo transformado no se dibuja la clave
+        foránea como si fuera un atributo. La clave foránea es del modelo relacional, no del
+        entidad–relación. Acá la relación se muestra con el rombo y sus roles, y la FK aparece
+        después, cuando ya pasemos a tablas.
+      </p>
+      <figure>
+        <a
+          href={`${taller1}08_Ej4b_SUPERVISAR_TRANSBORDAR.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img
+            src={`${taller1}08_Ej4b_SUPERVISAR_TRANSBORDAR.png`}
+            alt="Ejercicio 4b: SUPERVISAR se transforma y TRANSBORDAR se mantiene"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>
+          Ejercicio 4b. SUPERVISAR se transforma; TRANSBORDAR se mantiene. Selecciona la imagen para
+          abrirla en tamaño completo.
+          <a
+            class="draw-link"
+            href={`${taller1}08_Ej4b_SUPERVISAR_TRANSBORDAR.drawio`}
+            target="_blank"
+            rel="noopener">Descargar el archivo .drawio</a
+          >
+        </figcaption>
+      </figure>
+      <h3 id="ej-4c">4c. Las que no hay que tocar</h3>
+      <p>Estas cuatro pasan al modelo relacional tal como están:</p>
+      <ul>
+        <li>
+          <p>
+            <strong>IDENTIFICAR</strong>, SERVICIO (1) – (N) RECALADA. Es binaria 1:N. Lo único que
+            hace es pasarle <em>codigo_servicio</em> a la clave de RECALADA, que ya venía débil desde
+            el modelo original.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>ATENDER</strong>, BUQUE (1) – (N) RECALADA. Binaria 1:N y sin atributos. El
+            identificador del buque se baja al lado N y ya.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>CLASIFICAR</strong>, BUQUE (1) – (1) CERTIFICADO. Es 1:1, se resuelve pasando la
+            clave de un lado al otro. No toca crear nada.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>TRANSBORDAR</strong>, RECALADA (1) – (N) RECALADA. Es recursiva, pero es 1:N y
+            no tiene atributos. Como dijimos arriba, ser recursiva sola no obliga a nada.
+          </p>
+        </li>
+      </ul>
+      <p>
+        El criterio en una línea: pasa sin cambios toda relación binaria 1:1 o 1:N que no tenga
+        atributos propios, porque eso es justo lo que el modelo transformado permite. Se implementa
+        pasando una clave foránea y queda resuelto, sin entidades nuevas.
+      </p>
+      <p>
+        Todas las demás sí se transforman: EMBARQUE, CUADRILLA y SUPERVISAR por ser N:M; ABASTECER
+        por ser ternaria; DEPOSITA por ser agregación; y la jerarquía GRUERO / ESTIBADOR por ser
+        especialización.
+      </p>
+      <h2>5. Revisión del modelo del compañero</h2>
+      <p>Le encontramos tres errores al modelo que entregó el estudiante.</p>
+      <h3>Error 1. Las sedes puestas como columnas numeradas</h3>
+      <blockquote>
+        <p>
+          CONTRATISTA (nit, razon_social, ciudad_sede1, direccion_sede1,<br />
+          ciudad_sede2, direccion_sede2)
+        </p>
+      </blockquote>
+      <p>
+        <strong>Regla que se omitió.</strong> La de atributo multivaluado. Un multivaluado se saca a su
+        propia entidad; no se arregla repitiendo el campo con un numerito al final.
+      </p>
+      <p>
+        <strong>Problema que genera.</strong> Deja el máximo clavado en dos sedes. Un contratista con
+        tres no cabe, y meterlo obligaría a cambiar el esquema. Aparte, los contratistas con una sola
+        sede quedan con la mitad de las columnas vacías, y para responder algo tan sencillo como "qué
+        contratistas operan en Cali" toca revisar dos grupos de campos por aparte.
+      </p>
+      <p>
+        <strong>Forma de corregirlo.</strong> Crear la entidad SEDE_CONTRATISTA (ciudad, direccion) con
+        relación 1:N desde CONTRATISTA. Clave: nit + ciudad + direccion. Participación: CONTRATISTA (1)
+        parcial — SEDE_CONTRATISTA (N) total. Es exactamente lo del punto 1b.
+      </p>
+      <h3>Error 2. peso_toneladas y tipo_carga metidos en IMPORTADOR</h3>
+      <blockquote>
+        <p>
+          IMPORTADOR (documento, nombres, apellidos, correo,<br />
+          peso_toneladas, tipo_carga)
+        </p>
+      </blockquote>
+      <p>
+        <strong>Regla que se omitió.</strong> Acá se saltó dos reglas. La primera: los atributos de la
+        relación N:M van en la entidad que la reemplaza, nunca en uno de los extremos. La segunda, más
+        obvia todavía: <em>correo</em> sigue ahí como multivaluado, sin transformar.
+      </p>
+      <p>
+        <strong>Problema que genera.</strong> Con esos campos en IMPORTADOR, cada importador tendría un
+        solo peso y un solo tipo de carga para toda su historia con el puerto. Se pierde el detalle de
+        cada embarque y ya no se puede registrar dos envíos distintos del mismo cliente. Y lo de
+        <em>correo</em> deja en el modelo justo el tipo de atributo que el enunciado prohíbe.
+      </p>
+      <p>
+        <strong>Forma de corregirlo.</strong> Mover <em>peso_toneladas</em> y <em>tipo_carga</em> a la
+        entidad EMBARQUE, y sacar <em>correo</em> a la entidad CORREO_IMPORTADOR.
+      </p>
+      <h3>Error 3. EMBARQUE quedó desconectada de RECALADA</h3>
+      <blockquote>
+        <p>
+          EMBARQUE (id_embarque, fecha_solicitud)<br />
+          relación: IMPORTADOR (1) — (N) EMBARQUE<br />
+          relación: RECALADA (N) — (1) BODEGA
+        </p>
+      </blockquote>
+      <p>
+        <strong>Regla que se omitió.</strong> La entidad que reemplaza una N:M tiene que pegarse a las
+        dos entidades originales, y su clave tiene que ser la unión de los dos identificadores. Acá le
+        inventaron una clave artificial (<em>id_embarque</em>) y la dejaron colgando de un solo
+        lado. Y de paso, la agregación DEPOSITA quedó dibujada contra RECALADA en vez de contra
+        EMBARQUE.
+      </p>
+      <p>
+        <strong>Problema que genera.</strong> El modelo ya no dice en qué recalada se embarca la carga,
+        o sea que la relación N:M original desapareció del todo. Y al colgar BODEGA de RECALADA, toda
+        la carga de la escala tendría que irse a la misma bodega sin importar cuántos importadores hayan
+        embarcado, que es justo el error que explicamos en el punto 3b.
+      </p>
+      <p>
+        <strong>Forma de corregirlo.</strong> Conectar EMBARQUE con RECALADA por una relación 1:N, usar
+        como clave documento + codigo_servicio + fecha_arribo, y apoyar ALMACENAR sobre EMBARQUE.
+      </p>
+      <p>
+        Una cosa más, aunque no se incluye entre los tres errores principales: la entidad TRANSITO
+        también sobra. TRANSBORDAR es 1:N y no tiene atributos, así que no es necesario volverla
+        entidad. Bastaba con dejar la relación recursiva con sus roles.
+      </p>
+    </section>
+
+    <section id="cineandes">
+      <h1>Modelo entidad-relación: CineAndes</h1>
+      <p>
+        Esta evidencia presenta el diagrama entidad-relación elaborado para el caso CineAndes, con
+        entidades, atributos y relaciones del sistema.
+      </p>
+      <figure>
+        <a
+          href={diagramUrl}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el diagrama en tamaño completo"
+        >
+          <img src={diagramUrl} alt="Diagrama entidad-relación de CineAndes" loading="lazy" />
+        </a>
+        <figcaption>
+          Diagrama entidad-relación de CineAndes. Selecciona la imagen para abrirla en tamaño
+          completo.
+        </figcaption>
+      </figure>
+      <p>
+        <a class="file-link" href={sourceUrl} target="_blank" rel="noopener"
+          >Abrir o descargar el archivo editable de Draw.io</a
+        >
+      </p>
+    </section>
   </article>
 </Page>
 
 <style>
+  .modelado section + section {
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid #d1d5db;
+  }
+  .modelado header {
+    border-bottom: 1px solid #d1d5db;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+  }
+  .modelado h1 {
+    margin-top: 1rem;
+  }
+  .modelado h2 {
+    margin-top: 2.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #d8d8d8;
+  }
+  .modelado h3 {
+    margin-top: 1.8rem;
+  }
+  .modelado h4 {
+    margin-top: 1.4rem;
+  }
+  .modelado blockquote {
+    margin: 1rem 0;
+    padding: 0.2rem 1rem;
+    border-left: 4px solid #9ca3af;
+    background: rgba(128, 128, 128, 0.12);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+  }
+  .modelado .nota {
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+  .modelado .draw-link {
+    display: inline-block;
+    margin-left: 0.25rem;
+    font-weight: 600;
+  }
   .modelado {
     max-width: 100%;
     line-height: 1.7;

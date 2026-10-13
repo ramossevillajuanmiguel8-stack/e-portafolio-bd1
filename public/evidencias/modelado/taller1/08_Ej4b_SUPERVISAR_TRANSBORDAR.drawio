@@ -1,0 +1,67 @@
+<mxfile host="app.diagrams.net" agent="claude">
+  <diagram id="10-Ej4b_SUPERVISAR_y" name="10-Ej4b SUPERVISAR y TRANSBORDAR">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1750" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c180" parent="1" style="text;html=1;align=left;fontSize=19;fontStyle=1;" value="Ejercicio 4b - Relaciones recursivas: cual se transforma y cual no" vertex="1">
+          <mxGeometry height="34" width="1400" x="50" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c181" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=13;" value="&lt;b&gt;SUPERVISAR (M:N recursiva) - SI se transforma&lt;/b&gt;" vertex="1">
+          <mxGeometry height="26" width="700" x="80" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c182" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontSize=13;fontStyle=1;" value="OPERARIO" vertex="1">
+          <mxGeometry height="62" width="200" x="670" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c183" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;fontSize=12;" value="&lt;u&gt;id_operario&lt;/u&gt;" vertex="1">
+          <mxGeometry height="48" width="155" x="670" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c184" edge="1" parent="1" source="c183" style="html=1;endArrow=none;" target="c182">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c185" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=none;fontSize=12;" value="SUPERVISAR" vertex="1">
+          <mxGeometry height="80" width="150" x="380" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="c186" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=none;fontSize=12;" value="SER_SUPERVISADO" vertex="1">
+          <mxGeometry height="80" width="150" x="950" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="c187" parent="1" style="shape=ext;double=1;whiteSpace=wrap;html=1;fillColor=none;fontSize=13;fontStyle=1;" value="SUPERVISION" vertex="1">
+          <mxGeometry height="68" width="210" x="665" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="c188" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;fontSize=12;" value="periodo" vertex="1">
+          <mxGeometry height="48" width="155" x="950" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="c189" edge="1" parent="1" source="c188" style="html=1;endArrow=none;" target="c187">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c190" edge="1" parent="1" source="c182" style="html=1;endArrow=none;fontSize=12;" target="c185" value="(1) parcial">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c191" edge="1" parent="1" source="c185" style="shape=link;html=1;endArrow=none;fontSize=12;" target="c187" value="(N) total">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c192" edge="1" parent="1" source="c182" style="html=1;endArrow=none;fontSize=12;" target="c186" value="(1) parcial">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c193" edge="1" parent="1" source="c186" style="shape=link;html=1;endArrow=none;fontSize=12;" target="c187" value="(N) total">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c194" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=13;" value="&lt;b&gt;TRANSBORDAR (1:N recursiva) - NO se transforma&lt;/b&gt;" vertex="1">
+          <mxGeometry height="26" width="700" x="80" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="c195" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontSize=13;fontStyle=1;" value="RECALADA" vertex="1">
+          <mxGeometry height="62" width="200" x="420" y="844" as="geometry" />
+        </mxCell>
+        <mxCell id="c196" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=none;fontSize=12;" value="TRANSBORDAR" vertex="1">
+          <mxGeometry height="90" width="170" x="890" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="c197" edge="1" parent="1" source="c195" style="html=1;endArrow=none;fontSize=12;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="c196" value="recalada_origen (1) parcial">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c198" edge="1" parent="1" source="c196" style="html=1;endArrow=none;fontSize=12;entryX=1.005;entryY=0.206;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.21;exitY=0.287;exitDx=0;exitDy=0;exitPerimeter=0;" target="c195" value="recalada_destino (N) parcial">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
