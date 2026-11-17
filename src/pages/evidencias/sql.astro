@@ -1,19 +1,324 @@
 ---
+import { Code } from 'astro:components';
+
+import ejercicios from '../../data/sql_practica_hr.json';
 import Page from '../../layouts/Page.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const sqlUrl = `${base}/evidencias/sql/practica_hr.sql`;
+const proyectoUrl = `${base}/evidencias/proyecto/#algebra`;
+const themes = { light: 'github-light', dark: 'github-dark' } as const;
+
+const operadores = [
+  { op: 'Selección', simbolo: 'σ', sql: 'WHERE (o HAVING si filtra después de agrupar)' },
+  { op: 'Proyección', simbolo: 'π', sql: 'SELECT columnas (DISTINCT para quitar repetidos)' },
+  { op: 'Renombramiento', simbolo: 'ρ', sql: 'Alias con AS o alias de tabla' },
+  { op: 'Reunión theta', simbolo: '⋈θ', sql: 'JOIN … ON condición' },
+  { op: 'Reunión natural', simbolo: '⋈', sql: 'NATURAL JOIN (o JOIN … USING)' },
+  { op: 'Antirreunión', simbolo: '▷', sql: 'LEFT JOIN … WHERE … IS NULL, o NOT EXISTS' },
+  { op: 'Agregación', simbolo: 'γ', sql: 'Funciones de grupo con GROUP BY' },
+  { op: 'Asignación', simbolo: '←', sql: 'Subconsulta en el FROM o WITH' },
+];
+
+const tablasHR = [
+  {
+    nombre: 'EMPLOYEES',
+    pk: ['employee_id'],
+    resto:
+      'first_name, last_name, email, hire_date, job_id, salary, commission_pct, manager_id, department_id',
+  },
+  {
+    nombre: 'DEPARTMENTS',
+    pk: ['department_id'],
+    resto: 'department_name, manager_id, location_id',
+  },
+  { nombre: 'LOCATIONS', pk: ['location_id'], resto: 'street_address, city, country_id' },
+  {
+    nombre: 'JOB_HISTORY',
+    pk: ['employee_id', 'start_date'],
+    resto: 'end_date, job_id, department_id',
+  },
+];
 ---
 
-<Page title="SQL">
-  <div class="space-y-8">
-    <h1 class="text-3xl font-bold">SQL</h1>
+<Page
+  title="SQL"
+  description="Ejercicios de práctica en SQL sobre el esquema HR de Oracle, cada uno con su expresión en álgebra relacional"
+>
+  <article class="sqlpage">
+    <header>
+      <p>
+        <strong>Universidad El Bosque</strong> · Facultad de Ingeniería · Programa: Ingeniería de Sistemas
+      </p>
+      <p>Asignatura: Bases de Datos 1 · Docente: Ing., Esp., M.Ed. Christian Felipe Duarte</p>
+      <h1>SQL y álgebra relacional</h1>
+      <p>
+        <strong>Práctica de consultas sobre el esquema HR</strong> (Oracle Database, SQL Developer).
+      </p>
+      <p>
+        <strong>Autor:</strong> Juan Miguel Ramos Sevilla · <strong>Periodo:</strong> Bogotá D.C., 2026-2
+      </p>
+    </header>
 
-    <p class="text-lg leading-relaxed">
-      En esta sección se recopilarán ejercicios y actividades relacionadas con SQL, incluyendo
-      consultas, creación y manipulación de bases de datos.
+    <p>
+      En esta sección dejo los ejercicios de consultas que hice para practicar SQL. Para cada uno
+      escribí primero la expresión en álgebra relacional y después la consulta. Así se ve qué
+      operación hace cada parte del SELECT y es más fácil revisar si la consulta pide lo que es.
+    </p>
+    <p>
+      Los 55 ejercicios de álgebra relacional del proyecto final, con sus resultados en MySQL, están
+      en la <a href={proyectoUrl}>sección Proyecto</a>.
     </p>
 
-    <div class="rounded-xl border p-8 text-center">
-      <h2 class="mb-2 text-xl font-semibold">Próximamente</h2>
-      <p>Aquí publicaré las actividades y evidencias realizadas durante el semestre.</p>
-    </div>
-  </div>
+    <nav class="indice" aria-label="Contenido de la página">
+      <strong>Contenido</strong>
+      <ol>
+        <li><a href="#equivalencias">Del álgebra relacional a SQL</a></li>
+        <li><a href="#esquema">El esquema HR</a></li>
+        <li>
+          <a href="#ejercicios">Ejercicios</a>
+          <ol>
+            {
+              ejercicios.map((e) => (
+                <li>
+                  <a href={`#ej-${e.num}`}>{e.titulo}</a>
+                </li>
+              ))
+            }
+          </ol>
+        </li>
+      </ol>
+    </nav>
+
+    <section id="equivalencias">
+      <h2>1. Del álgebra relacional a SQL</h2>
+      <p>
+        Cada operador del álgebra tiene su forma en SQL. Esta es la tabla que usé de guía para pasar
+        de una a la otra:
+      </p>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Operador</th>
+              <th>Símbolo</th>
+              <th>En SQL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              operadores.map((o) => (
+                <tr>
+                  <td>{o.op}</td>
+                  <td class="simbolo">{o.simbolo}</td>
+                  <td>{o.sql}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="nota">
+        Una diferencia que importa: el álgebra trabaja con conjuntos, entonces π no deja filas
+        repetidas. SQL sí las deja, a menos que se ponga DISTINCT.
+      </p>
+    </section>
+
+    <section id="esquema">
+      <h2>2. El esquema HR</h2>
+      <p>
+        HR es el esquema de ejemplo de Oracle: una empresa con empleados, departamentos, sedes y el
+        historial de cargos. Estas son las tablas que usan los ejercicios (PK subrayada):
+      </p>
+      <ul class="esquema">
+        {
+          tablasHR.map((t) => (
+            <li>
+              <strong>{t.nombre}</strong> (<u>{t.pk.join(', ')}</u>, {t.resto})
+            </li>
+          ))
+        }
+      </ul>
+      <p class="nota">
+        EMPLOYEES tiene una relación consigo misma: manager_id apunta al employee_id del jefe. Esa
+        es la que se usa en el ejercicio 7 para saber quién no tiene subordinados.
+      </p>
+    </section>
+
+    <section id="ejercicios">
+      <h2>3. Ejercicios</h2>
+      {
+        ejercicios.map((e) => (
+          <div class="ejercicio" id={`ej-${e.num}`}>
+            <h3>
+              <span class="num">{e.num}</span> {e.titulo}
+            </h3>
+            <p class="enunciado">{e.enunciado}</p>
+            <h4>Álgebra relacional</h4>
+            <div class="algebra">
+              {e.formulas_html.map((f) => (
+                <div class="formula" set:html={f} />
+              ))}
+            </div>
+            <h4>SQL (Oracle)</h4>
+            <Code code={e.sql} lang="sql" themes={themes} wrap={false} />
+            <h4>Cómo lo pensé</h4>
+            <ul>
+              {e.explicacion.map((x) => (
+                <li>{x}</li>
+              ))}
+            </ul>
+            {e.nota && (
+              <p class="aviso">
+                <strong>Ojo:</strong> {e.nota}
+              </p>
+            )}
+          </div>
+        ))
+      }
+    </section>
+
+    <p>
+      <a class="file-link" href={sqlUrl} download>Descargar los ejercicios (.sql)</a>
+    </p>
+  </article>
 </Page>
+
+<style>
+  .sqlpage {
+    max-width: 100%;
+    line-height: 1.7;
+  }
+  .sqlpage header {
+    border-bottom: 1px solid #d1d5db;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+  }
+  .sqlpage h1 {
+    margin-top: 1rem;
+  }
+  .sqlpage h2 {
+    margin-top: 2.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #d8d8d8;
+  }
+  .sqlpage h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .sqlpage h4 {
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+  }
+  .sqlpage .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--global-theme-color);
+    color: white;
+    font-size: 0.95rem;
+  }
+  .sqlpage .indice {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+  }
+  .sqlpage .indice ol {
+    margin: 0.4rem 0 0;
+    padding-left: 1.4rem;
+    list-style: decimal;
+  }
+  .sqlpage .indice ol ol {
+    margin-top: 0.2rem;
+  }
+  .sqlpage ul {
+    list-style: disc;
+    padding-left: 1.4rem;
+  }
+  .sqlpage .tabla-scroll {
+    overflow-x: auto;
+  }
+  .sqlpage table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .sqlpage th,
+  .sqlpage td {
+    border: 1px solid var(--global-divider-color);
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+  }
+  .sqlpage th {
+    background: var(--global-code-bg-color);
+  }
+  .sqlpage .simbolo {
+    font-size: 1.15rem;
+    text-align: center;
+  }
+  .sqlpage .esquema li {
+    margin: 0.3rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+  }
+  .sqlpage .ejercicio {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+  }
+  .sqlpage .enunciado {
+    font-style: italic;
+  }
+  .sqlpage .algebra {
+    padding: 0.5rem 1rem;
+    border-left: 4px solid var(--global-theme-color);
+    background: var(--global-code-bg-color);
+    border-radius: 0.25rem;
+    overflow-x: auto;
+  }
+  .sqlpage .formula :global(.katex-display) {
+    margin: 0.6rem 0;
+    text-align: left;
+  }
+  .sqlpage .formula :global(.katex-display > .katex) {
+    text-align: left;
+  }
+  .sqlpage :global(.astro-code) {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    overflow-x: auto;
+  }
+  .sqlpage .nota {
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+  .sqlpage .aviso {
+    margin-top: 1rem;
+    padding: 0.6rem 1rem;
+    border-left: 4px solid var(--global-warning-block);
+    background: var(--global-warning-block-bg);
+    color: var(--global-warning-block-text);
+    border-radius: 0.25rem;
+    font-size: 0.95rem;
+  }
+  .sqlpage .file-link {
+    display: inline-block;
+    padding: 0.7rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>

@@ -1,19 +1,750 @@
 ---
+import { Code } from 'astro:components';
+
+import VideoEmbed from '../../components/VideoEmbed.astro';
+import grupos from '../../data/sigevet_algebra.json';
 import Page from '../../layouts/Page.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const dir = `${base}/evidencias/proyecto`;
+const themes = { light: 'github-light', dark: 'github-dark' } as const;
+
+/**
+ * Enlace al video de demostración (YouTube o Vimeo). El .mp4 pesa más de 100 MB y GitHub no
+ * acepta archivos de ese tamaño, así que se sube a YouTube (puede ser "no listado") y se pega
+ * aquí el enlace. Mientras esté vacío, la sección del video no se muestra.
+ */
+const VIDEO_URL: string = '';
+
+const integrantes = [
+  { nombre: 'Juan David Polo Herrera', rol: 'Gerente del proyecto y DBA' },
+  { nombre: 'Sebastián Castellanos Parra', rol: 'Analista y modelador de datos' },
+  { nombre: 'Juan Miguel Ramos Sevilla', rol: 'Desarrollador web e infraestructura' },
+  { nombre: 'Sergio Alejandro Parra Rivera', rol: 'Verificador de la base de datos e integrador' },
+];
+
+const problemas = [
+  [
+    'Citas cruzadas',
+    'Cada sede maneja su propia agenda',
+    'Tiempos muertos y veterinarios con dos citas a la vez',
+  ],
+  [
+    'Historia clínica incompleta entre sedes',
+    'Carpetas separadas',
+    'Alergias y tratamientos que no se conocen',
+  ],
+  [
+    'Medicamentos agotados o con sobrestock',
+    'No hay stock mínimo',
+    'Ventas perdidas y plata inmovilizada',
+  ],
+  ['Clientes duplicados', 'Cada sede registra por su lado', 'Anomalías de actualización'],
+  ['No se sabe cuánto entra', 'Facturación separada', 'Decisiones sin datos'],
+];
+
+const cifras = [
+  { valor: '18', texto: 'entidades en el modelo conceptual' },
+  { valor: '26', texto: 'relaciones (5 de 1:1, 18 de 1:N y 3 de N:M)' },
+  { valor: '22', texto: 'tablas en 3FN' },
+  { valor: '113', texto: 'restricciones con nombre' },
+  { valor: '6 · 2 · 3 · 9', texto: 'vistas · funciones · procedimientos · disparadores' },
+  { valor: '1.091', texto: 'registros de prueba' },
+  { valor: '55', texto: 'ejercicios de álgebra relacional' },
+];
+
+const tecnologias = [
+  {
+    capa: 'Sistema operativo',
+    detalle: 'Oracle Linux 9 en una máquina virtual (Lima) sobre un portátil con Fedora',
+  },
+  { capa: 'Motor de base de datos', detalle: 'MySQL 8.4, administrado con MySQL Workbench' },
+  {
+    capa: 'Lenguaje de la base',
+    detalle:
+      'SQL: DDL (tablas, restricciones, vistas), DML (inserciones), funciones, procedimientos y disparadores',
+  },
+  {
+    capa: 'Backend',
+    detalle:
+      'Java 21 con Spring Boot 3.5: API REST en JSON. El SQL está escrito a mano con JDBC, sin ORM',
+  },
+  {
+    capa: 'Frontend',
+    detalle: 'Angular 21 (TypeScript) con Bootstrap. Solo habla con la API, nunca con MySQL',
+  },
+  {
+    capa: 'Automatización',
+    detalle:
+      'Scripts en Bash para instalar MySQL, cargar la base e instalar la aplicación en la VM',
+  },
+  {
+    capa: 'Modelado',
+    detalle: 'Draw.io (Chen, EER, Barker, Crow’s Foot, relacional) y MySQL Workbench',
+  },
+  { capa: 'Control de versiones', detalle: 'Git y GitHub, con aportes de todos los integrantes' },
+];
+
+const patrones = [
+  {
+    nombre: 'Arquitectura por capas',
+    texto:
+      'Controller → Service → DAO. El controlador recibe la petición, el servicio valida y aplica las reglas, y el DAO ejecuta el SQL.',
+  },
+  {
+    nombre: 'DAO (Data Access Object)',
+    texto:
+      'Una clase por tema (ClienteDAO, MascotaDAO, CitaDAO, FacturaDAO, InventarioDAO, PersonalDAO…) con todo el SQL de esa parte.',
+  },
+  {
+    nombre: 'Consultas parametrizadas',
+    texto:
+      'Los valores van con PreparedStatement y parámetros ?, nunca pegados al texto del SQL. Eso evita la inyección SQL.',
+  },
+  {
+    nombre: 'Transacciones manuales',
+    texto:
+      'Cuando una operación escribe en varias tablas (factura con sus líneas, empleado con su subtipo) se hace COMMIT al final o ROLLBACK si algo falla, así no quedan registros a medias.',
+  },
+  {
+    nombre: 'Herencia y polimorfismo',
+    texto:
+      'La especialización de EMPLEADO en VETERINARIO y AUXILIAR se refleja en clases Java: cada tipo de empleado da su propia descripción.',
+  },
+  {
+    nombre: 'Reglas en la base',
+    texto:
+      'Las restricciones CHECK, UNIQUE y FK y los disparadores protegen los datos aunque alguien se salte la aplicación. La API traduce esos errores a mensajes claros.',
+  },
+];
+
+type Fig = { file: string; alt: string };
+const diagramas: { id: string; titulo: string; texto: string; figs: Fig[] }[] = [
+  {
+    id: 'chen',
+    titulo: 'Modelo entidad-relación en notación Peter Chen',
+    texto:
+      'El modelo conceptual completo y después partido en tres áreas (organización, clínica y comercial) para que se puedan leer todos los atributos.',
+    figs: [
+      { file: '01_chen_completo.png', alt: 'MER de SIGEVET en notación Peter Chen (completo)' },
+      { file: '02_chen_organizacion.png', alt: 'MER Chen: área Organización' },
+      { file: '03_chen_clinica.png', alt: 'MER Chen: área Clínica' },
+      { file: '04_chen_comercial.png', alt: 'MER Chen: área Comercial' },
+    ],
+  },
+  {
+    id: 'eer',
+    titulo: 'Modelo entidad-relación extendido',
+    texto:
+      'El EER usa la notación (min, max) y modela la especialización de EMPLEADO en VETERINARIO y AUXILIAR, que es disyunta y parcial.',
+    figs: [
+      {
+        file: '05_eer_completo.png',
+        alt: 'MER extendido de SIGEVET con notación (min,max) y especialización',
+      },
+      { file: '06_eer_especializacion.png', alt: 'Especialización disyunta y parcial de EMPLEADO' },
+    ],
+  },
+  {
+    id: 'barker',
+    titulo: 'Notación Barker',
+    texto: 'El mismo modelo en notación Barker, hecho en MySQL Workbench y en Draw.io.',
+    figs: [
+      {
+        file: '07_barker_workbench.png',
+        alt: 'Modelo de SIGEVET en notación Barker (MySQL Workbench)',
+      },
+      { file: '08_barker_drawio.png', alt: 'Modelo de SIGEVET en notación Barker (Draw.io)' },
+    ],
+  },
+  {
+    id: 'crowsfoot',
+    titulo: 'Notación Crow’s Foot (pata de gallina)',
+    texto:
+      'En pata de gallina se lee directo la cardinalidad mínima y máxima de cada lado de la relación.',
+    figs: [
+      {
+        file: '09_crowsfoot_workbench.png',
+        alt: 'MER de SIGEVET en notación Crow’s Foot (MySQL Workbench)',
+      },
+      { file: '10_crowsfoot_drawio.png', alt: 'MER de SIGEVET en notación Crow’s Foot (Draw.io)' },
+    ],
+  },
+  {
+    id: 'relacional',
+    titulo: 'Modelo relacional',
+    texto: 'Las 22 tablas con sus claves primarias y foráneas, completo y por área.',
+    figs: [
+      {
+        file: '11_relacional_workbench.png',
+        alt: 'Modelo relacional completo de SIGEVET (MySQL Workbench)',
+      },
+      { file: '12_relacional_drawio.png', alt: 'Modelo relacional completo de SIGEVET (Draw.io)' },
+      { file: '13_relacional_organizacion.png', alt: 'Modelo relacional: Organización' },
+      { file: '14_relacional_clinica.png', alt: 'Modelo relacional: Clínica' },
+      { file: '15_relacional_comercial.png', alt: 'Modelo relacional: Comercial' },
+    ],
+  },
+  {
+    id: 'transformaciones',
+    titulo: 'Transformaciones al modelo relacional',
+    texto:
+      'Ejemplos de cómo se pasaron al modelo relacional el atributo multivaluado, las relaciones N:M y la entidad débil.',
+    figs: [
+      { file: '16_transf_cliente_telefono.png', alt: 'CLIENTE y teléfonos multivaluados' },
+      { file: '17_transf_prescribir.png', alt: 'Relación N:M PRESCRIBIR' },
+      { file: '18_transf_almacenar.png', alt: 'Relación N:M ALMACENAR' },
+      { file: '19_transf_certificar.png', alt: 'Relación N:M CERTIFICAR' },
+      {
+        file: '20_transf_detalle_factura.png',
+        alt: 'Entidad débil DETALLE_FACTURA y llave parcial',
+      },
+    ],
+  },
+  {
+    id: 'normalizacion',
+    titulo: 'Normalización',
+    texto: 'El proceso desde la forma no normalizada (0FN) hasta la tercera forma normal (3FN).',
+    figs: [{ file: '21_normalizacion.png', alt: 'Proceso de normalización de 0FN a 3FN' }],
+  },
+];
+
+const capturas: Fig[] = [
+  { file: '01.png', alt: 'Inicio de sesión del personal con un documento incorrecto' },
+  { file: '02.png', alt: 'Página de inicio con los indicadores de la red' },
+  { file: '03.png', alt: 'Detalle de un cliente con teléfonos, mascotas y facturas' },
+  { file: '04.png', alt: 'Formulario para crear un cliente' },
+  { file: '05.png', alt: 'Cliente creado desde la aplicación' },
+  { file: '06.png', alt: 'Historia clínica de una mascota (consultas y prescripciones)' },
+  { file: '07.png', alt: 'Agenda de citas' },
+  { file: '08.png', alt: 'Inventario por sede con alertas de stock' },
+  { file: '09.png', alt: 'Formulario de una factura nueva con sus líneas' },
+  { file: '10.png', alt: 'Factura creada desde la aplicación' },
+  {
+    file: '11.png',
+    alt: 'Personal: cada tipo de empleado con su propia descripción (polimorfismo)',
+  },
+  { file: '12.png', alt: 'Ejercicio 41 de álgebra (división) ejecutado en vivo' },
+];
+
+const descargas = [
+  { file: 'consultas_algebra_relacional.sql', texto: 'Consultas SQL de los 55 ejercicios (.sql)' },
+  { file: 'SIGEVET_DDL_MySQL.sql', texto: 'Script de creación de tablas y restricciones (.sql)' },
+  { file: '05_MER_Barker_Workbench.pdf', texto: 'MER en notación Barker (PDF)' },
+  { file: '05_MER_CrowsFoot_Workbench.pdf', texto: 'MER en notación Crow’s Foot (PDF)' },
+  { file: '06_Modelo_Relacional_Workbench.pdf', texto: 'Modelo relacional (PDF)' },
+];
+
+const totalEjercicios = grupos.reduce((n, g) => n + g.ejercicios.length, 0);
 ---
 
-<Page title="Proyecto">
-  <div class="space-y-8">
-    <h1 class="text-3xl font-bold">Proyecto</h1>
+<Page
+  title="Proyecto"
+  description="SIGEVET, Sistema Integral de Gestión Veterinaria: diagramas, álgebra relacional, consultas SQL y capturas del aplicativo web"
+>
+  <article class="proyecto">
+    <header>
+      <p>
+        <strong>Universidad El Bosque</strong> · Facultad de Ingeniería · Programa: Ingeniería de Sistemas
+      </p>
+      <p>
+        Asignatura: Bases de Datos 1 · Docente: Ing., Esp., M.Ed. Christian Felipe Duarte Arévalo
+      </p>
+      <h1>Proyecto final: SIGEVET</h1>
+      <p>
+        <strong>Sistema Integral de Gestión Veterinaria</strong> para la red de clínicas
+        <em>Huella Sana S.A.S.</em> (caso simulado).
+      </p>
+      <p><strong>Periodo:</strong> Bogotá D.C., 2026-2</p>
+    </header>
 
-    <p class="text-lg leading-relaxed">
-      En esta sección presentaré el proyecto desarrollado durante la asignatura Bases de Datos 1,
-      junto con sus avances, resultados y evidencias.
-    </p>
+    <nav class="indice" aria-label="Contenido de la página">
+      <strong>Contenido</strong>
+      <ol>
+        <li><a href="#resumen">El proyecto</a></li>
+        <li><a href="#tecnologias">Tecnologías y arquitectura</a></li>
+        <li><a href="#diagramas">Diagramas</a></li>
+        <li><a href="#algebra">Álgebra relacional y consultas SQL</a></li>
+        <li><a href="#aplicativo">Aplicativo web</a></li>
+        <li><a href="#gestion">Gestión del proyecto</a></li>
+        <li><a href="#descargas">Descargas</a></li>
+      </ol>
+    </nav>
 
-    <div class="rounded-xl border p-8 text-center">
-      <h2 class="mb-2 text-xl font-semibold">Próximamente</h2>
-      <p>Aquí publicaré las evidencias y resultados del proyecto de la asignatura.</p>
-    </div>
-  </div>
+    <section id="resumen">
+      <h2>1. El proyecto</h2>
+      <p>
+        Huella Sana es una red de cinco clínicas veterinarias que nos inventamos: Usaquén y
+        Chapinero en Bogotá, Chía, Laureles en Medellín y San Fernando en Cali. Atiende perros,
+        gatos, aves, conejos y hámsteres, y tiene 27 empleados entre veterinarios, auxiliares y
+        administrativos.
+      </p>
+      <p>
+        El problema es que cada sede trabajaba por su lado. SIGEVET centraliza las cinco en una sola
+        base de datos relacional en 3FN, con clientes, mascotas e historia clínica compartida,
+        citas, consultas y fórmulas, inventario de medicamentos por sede y facturación, todo
+        consultable desde una aplicación web.
+      </p>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr><th>Síntoma</th><th>Causa</th><th>Consecuencia</th></tr>
+          </thead>
+          <tbody>
+            {
+              problemas.map(([s, c, q]) => (
+                <tr>
+                  <>
+                    <td>{s}</td>
+                    <td>{c}</td>
+                    <td>{q}</td>
+                  </>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h3>En números</h3>
+      <div class="cifras">
+        {
+          cifras.map((c) => (
+            <div class="cifra">
+              <span class="valor">{c.valor}</span>
+              <span class="texto">{c.texto}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <h3>Equipo</h3>
+      <ul>
+        {
+          integrantes.map((i) => (
+            <li>
+              <strong>{i.nombre}</strong>: {i.rol}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="nota">
+        Mi parte fue el desarrollo web y la infraestructura: la máquina virtual, la instalación de
+        MySQL y la aplicación que se conecta a la base.
+      </p>
+    </section>
+
+    <section id="tecnologias">
+      <h2>2. Tecnologías y arquitectura</h2>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr><th>Parte</th><th>Qué usamos</th></tr>
+          </thead>
+          <tbody>
+            {
+              tecnologias.map((t) => (
+                <tr>
+                  <>
+                    <td>{t.capa}</td>
+                    <td>{t.detalle}</td>
+                  </>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <h3>Cómo viaja una petición</h3>
+      <pre
+        class="flujo">Navegador (Angular) ── HTTP :5000 /api ──▶ Controller ──▶ Service ──▶ DAO (JDBC) ──▶ MySQL 8.4</pre>
+      <h3>Patrones y buenas prácticas</h3>
+      <div class="patrones">
+        {
+          patrones.map((p) => (
+            <div class="patron">
+              <strong>{p.nombre}</strong>
+              <p>{p.texto}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="diagramas">
+      <h2>3. Diagramas</h2>
+      <p class="nota">Selecciona cualquier diagrama para abrirlo en tamaño completo.</p>
+      {
+        diagramas.map((d) => (
+          <div id={d.id}>
+            <h3>{d.titulo}</h3>
+            <p>{d.texto}</p>
+            <div class={d.figs.length > 1 ? 'galeria' : ''}>
+              {d.figs.map((f) => (
+                <figure>
+                  <a
+                    href={`${dir}/diagramas/${f.file}`}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="Abrir el diagrama en tamaño completo"
+                  >
+                    <img src={`${dir}/diagramas/${f.file}`} alt={f.alt} loading="lazy" />
+                  </a>
+                  <figcaption>{f.alt}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </section>
+
+    <section id="algebra">
+      <h2>4. Álgebra relacional y consultas SQL</h2>
+      <p>
+        Hicimos {totalEjercicios} ejercicios (el mínimo eran 50) que cubren todos los operadores: selección,
+        proyección, producto cartesiano, renombramiento, reuniones, reuniones externas, semirreunión y
+        antirreunión, operaciones de conjuntos, división y agregación. Cada uno tiene su expresión en
+        álgebra, la consulta SQL equivalente y el resultado que dio en MySQL 8.4 con los 1.091 registros
+        de prueba.
+      </p>
+      <p class="nota">
+        Se muestran hasta tres filas del resultado. Selecciona un ejercicio para desplegarlo.
+      </p>
+      {
+        grupos.map((g) => (
+          <div class="grupo">
+            <h3>{g.titulo}</h3>
+            {g.ejercicios.map((e) => (
+              <details class="ejercicio" id={`ej-${e.num}`}>
+                <summary>
+                  <span class="num">{e.num}</span>
+                  <span>{e.titulo}</span>
+                </summary>
+                <div class="cuerpo">
+                  <p class="enunciado">{e.enunciado}</p>
+                  <h4>Álgebra relacional</h4>
+                  <div class="algebra">
+                    {e.formulas_html.map((f) => (
+                      <div class="formula" set:html={f} />
+                    ))}
+                  </div>
+                  <h4>SQL (MySQL 8.4)</h4>
+                  <Code code={e.sql} lang="sql" themes={themes} />
+                  {e.tabla && (
+                    <>
+                      <h4>Resultado {e.resultado}</h4>
+                      <div class="tabla-scroll resultado" set:html={e.tabla} />
+                    </>
+                  )}
+                </div>
+              </details>
+            ))}
+          </div>
+        ))
+      }
+      <p>
+        <a class="file-link" href={`${dir}/descargas/consultas_algebra_relacional.sql`} download
+          >Descargar las 55 consultas (.sql)</a
+        >
+      </p>
+    </section>
+
+    <section id="aplicativo">
+      <h2>5. Aplicativo web</h2>
+      <p>
+        La aplicación la usa el personal de la clínica. Se entra con el correo corporativo y el
+        número de documento, y desde ahí se consultan y registran clientes, mascotas, citas,
+        facturas, inventario y personal. También tiene una página que ejecuta en vivo los ejercicios
+        de álgebra relacional contra la base.
+      </p>
+      <div class="galeria">
+        {
+          capturas.map((c) => (
+            <figure>
+              <a
+                href={`${dir}/app/${c.file}`}
+                target="_blank"
+                rel="noopener"
+                aria-label="Abrir la captura en tamaño completo"
+              >
+                <img src={`${dir}/app/${c.file}`} alt={c.alt} loading="lazy" />
+              </a>
+              <figcaption>{c.alt}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+      {
+        VIDEO_URL && (
+          <>
+            <h3>Video de demostración</h3>
+            <VideoEmbed src={VIDEO_URL} title="Video de demostración de SIGEVET" />
+          </>
+        )
+      }
+    </section>
+
+    <section id="gestion">
+      <h2>6. Gestión del proyecto</h2>
+      <p>
+        El proyecto se planeó en 14 semanas, con 22 paquetes de trabajo en la EDT y 385 horas.
+        Trabajamos con una adaptación de Scrum en siete sprints.
+      </p>
+      <figure>
+        <a
+          href={`${dir}/gestion/edt_wbs.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir la EDT en tamaño completo"
+        >
+          <img
+            src={`${dir}/gestion/edt_wbs.png`}
+            alt="EDT/WBS del proyecto SIGEVET"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>EDT/WBS del proyecto SIGEVET</figcaption>
+      </figure>
+      <figure>
+        <a
+          href={`${dir}/gestion/cronograma_gantt.png`}
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir el cronograma en tamaño completo"
+        >
+          <img
+            src={`${dir}/gestion/cronograma_gantt.png`}
+            alt="Cronograma Gantt del proyecto SIGEVET"
+            loading="lazy"
+          />
+        </a>
+        <figcaption>Cronograma Gantt del proyecto SIGEVET</figcaption>
+      </figure>
+    </section>
+
+    <section id="descargas">
+      <h2>7. Descargas</h2>
+      <ul class="descargas">
+        {
+          descargas.map((d) => (
+            <li>
+              <a href={`${dir}/descargas/${d.file}`} download>
+                {d.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
 </Page>
+
+<style>
+  .proyecto {
+    max-width: 100%;
+    line-height: 1.7;
+  }
+  .proyecto header {
+    border-bottom: 1px solid #d1d5db;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+  }
+  .proyecto h1 {
+    margin-top: 1rem;
+  }
+  .proyecto h2 {
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #d8d8d8;
+  }
+  .proyecto h3 {
+    margin-top: 1.8rem;
+  }
+  .proyecto h4 {
+    margin-top: 1.1rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+  }
+  .proyecto ul {
+    list-style: disc;
+    padding-left: 1.4rem;
+  }
+  .proyecto .indice {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+  }
+  .proyecto .indice ol {
+    margin: 0.4rem 0 0;
+    padding-left: 1.4rem;
+    list-style: decimal;
+  }
+  .proyecto .nota {
+    font-size: 0.95rem;
+    opacity: 0.85;
+  }
+  .proyecto .tabla-scroll {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .proyecto table,
+  .proyecto .resultado :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .proyecto th,
+  .proyecto td,
+  .proyecto .resultado :global(th),
+  .proyecto .resultado :global(td) {
+    border: 1px solid var(--global-divider-color);
+    padding: 0.4rem 0.7rem;
+    text-align: left;
+  }
+  .proyecto th,
+  .proyecto .resultado :global(th) {
+    background: var(--global-code-bg-color);
+    font-weight: 600;
+  }
+  .proyecto .cifras {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 0.75rem;
+  }
+  .proyecto .cifra {
+    display: flex;
+    flex-direction: column;
+    padding: 0.9rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+  }
+  .proyecto .cifra .valor {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--global-theme-color);
+    line-height: 1.2;
+  }
+  .proyecto .cifra .texto {
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+  .proyecto .flujo {
+    padding: 0.9rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--global-code-bg-color);
+    font-size: 0.85rem;
+    overflow-x: auto;
+  }
+  .proyecto .patrones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
+  }
+  .proyecto .patron {
+    padding: 0.9rem 1rem;
+    border: 1px solid #d1d5db;
+    border-left: 4px solid var(--global-theme-color);
+    border-radius: 0.5rem;
+  }
+  .proyecto .patron p {
+    margin: 0.3rem 0 0;
+    font-size: 0.93rem;
+  }
+  .proyecto figure {
+    margin: 1.25rem 0;
+  }
+  .proyecto img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    background: white;
+  }
+  .proyecto figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  .proyecto .galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+  .proyecto .galeria figure {
+    margin: 0;
+  }
+  .proyecto .grupo h3 {
+    margin-top: 1.6rem;
+    margin-bottom: 0.6rem;
+  }
+  .proyecto .ejercicio {
+    border: 1px solid #d1d5db;
+    border-radius: 0.6rem;
+    margin: 0.5rem 0;
+  }
+  .proyecto .ejercicio summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .proyecto .ejercicio[open] summary {
+    border-bottom: 1px solid #d1d5db;
+  }
+  .proyecto .ejercicio .cuerpo {
+    padding: 0.4rem 1rem 1rem;
+  }
+  .proyecto .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background: var(--global-theme-color);
+    color: white;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .proyecto .enunciado {
+    font-style: italic;
+  }
+  .proyecto .algebra {
+    padding: 0.4rem 1rem;
+    border-left: 4px solid var(--global-theme-color);
+    background: var(--global-code-bg-color);
+    border-radius: 0.25rem;
+    overflow-x: auto;
+  }
+  .proyecto .formula :global(.katex-display) {
+    margin: 0.6rem 0;
+    text-align: left;
+  }
+  .proyecto .formula :global(.katex-display > .katex) {
+    text-align: left;
+  }
+  .proyecto :global(.astro-code) {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    overflow-x: auto;
+  }
+  .proyecto .file-link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>
